@@ -1,0 +1,39 @@
+package middleware
+
+import (
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/logger/accesslog"
+	corsmw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/cors_middleware"
+	errormw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/error_middleware"
+	jwtmw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/jwt_middleware"
+	tracemdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/trace_middleware"
+)
+
+// DefaultMiddleware 默认中间件注册
+// 注意：Casbin 权限中间件不在此注册，应在具体路由组或路由上使用
+func DefaultMiddleware(
+	h *server.Hertz,
+	traceMiddleware tracemdw.TraceMiddlewareService,
+	corsMiddleware corsmw.CORSMiddlewareService,
+	errorMiddleware errormw.ErrorHandlerMiddlewareService,
+	jwtMiddleware jwtmw.JWTMiddlewareService,
+) {
+	h.Use(
+		traceMiddleware.MiddlewareFunc(), // 1. 追踪：最先执行，生成/提取追踪信息
+		AssessLog(),                      // 2. 日志：捕获完整请求信息
+		corsMiddleware.MiddlewareFunc(),  // 3. 跨域：处理预检，避免被后续中间件拦截
+		errorMiddleware.MiddlewareFunc(), // 4. 错误处理：后续所有错误均由其捕获
+		jwtMiddleware.MiddlewareFunc(),   // 5. 认证：解析用户身份，存入上下文
+		// 注意：Casbin 权限校验不在全局注册
+		// 应在需要权限的路由组或路由上使用：
+		// - casbinMiddleware.RequiresPermissions("users:read")  // 推荐
+		// - casbinMiddleware.RequiresRoles("admin")            // 推荐
+		// - casbinMiddleware.MiddlewareFunc()                  // 仅限路由组
+	)
+}
+
+func AssessLog() app.HandlerFunc {
+	assesslogFormat := "[${time}] ${status} - ${latency} ${method} ${path} ${queryParams}"
+	return accesslog.New(accesslog.WithFormat(assesslogFormat))
+}
