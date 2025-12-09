@@ -3,7 +3,6 @@ namespace go core
 // =================================================================
 //                      API Gateway 基础数据类型定义
 // =================================================================
-typedef string ULID // 通用唯一标识符 ULID
 typedef string UUID // 通用唯一标识符 UUID
 typedef i64 TimestampMS // Unix 毫秒时间戳 (推荐)
 typedef string URL // 统一资源定位符

@@ -12,8 +12,6 @@ import (
 //	API Gateway 基础数据类型定义
 //
 // =================================================================
-type ULID = string
-
 type UUID = string
 
 type TimestampMS = int64

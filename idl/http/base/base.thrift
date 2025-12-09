@@ -43,10 +43,8 @@ struct TokenInfoDTO {
 struct BaseResponseDTO {
     1: required i32 code = 0 (go.tag = "json:\"code\""),                               // 错误码，0表示成功
     2: required string message = "success" (go.tag = "json:\"message\""),              // 人类可读的提示信息
-    3: required string request_id (go.tag = "json:\"request_id\""),                    // 本次请求的唯一ID（用于追踪）
-    4: required string trace_id (go.tag = "json:\"trace_id\""),                        // 用于链路追踪的ID
-    5: required core.TimestampMS timestamp (go.tag = "json:\"timestamp\""),            // 服务器响应时间戳 (ms)
-    6: optional map<string, string> metadata (go.tag = "json:\"metadata,omitempty\""), // 其他元数据
+    3: required core.TimestampMS timestamp (go.tag = "json:\"timestamp\""),            // 服务器响应时间戳 (ms)
+    4: optional map<string, string> metadata (go.tag = "json:\"metadata,omitempty\""), // 其他元数据
 }
 
 /**

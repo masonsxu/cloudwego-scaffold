@@ -915,14 +915,10 @@ type BaseResponseDTO struct {
 	Code int32 `thrift:"code,1,required" json:"code" form:"code,required" query:"code,required"`
 	// 人类可读的提示信息
 	Message string `thrift:"message,2,required" json:"message" form:"message,required" query:"message,required"`
-	// 本次请求的唯一ID（用于追踪）
-	RequestID string `thrift:"request_id,3,required" json:"request_id" form:"request_id,required" query:"request_id,required"`
-	// 用于链路追踪的ID
-	TraceID string `thrift:"trace_id,4,required" json:"trace_id" form:"trace_id,required" query:"trace_id,required"`
 	// 服务器响应时间戳 (ms)
-	Timestamp core.TimestampMS `thrift:"timestamp,5,required" json:"timestamp" form:"timestamp,required" query:"timestamp,required"`
+	Timestamp core.TimestampMS `thrift:"timestamp,3,required" json:"timestamp" form:"timestamp,required" query:"timestamp,required"`
 	// 其他元数据
-	Metadata map[string]string `thrift:"metadata,6,optional" json:"metadata,omitempty" form:"metadata" query:"metadata"`
+	Metadata map[string]string `thrift:"metadata,4,optional" json:"metadata,omitempty" form:"metadata" query:"metadata"`
 }
 
 func NewBaseResponseDTO() *BaseResponseDTO {
@@ -945,14 +941,6 @@ func (p *BaseResponseDTO) GetMessage() (v string) {
 	return p.Message
 }
 
-func (p *BaseResponseDTO) GetRequestID() (v string) {
-	return p.RequestID
-}
-
-func (p *BaseResponseDTO) GetTraceID() (v string) {
-	return p.TraceID
-}
-
 func (p *BaseResponseDTO) GetTimestamp() (v core.TimestampMS) {
 	return p.Timestamp
 }
@@ -969,10 +957,8 @@ func (p *BaseResponseDTO) GetMetadata() (v map[string]string) {
 var fieldIDToName_BaseResponseDTO = map[int16]string{
 	1: "code",
 	2: "message",
-	3: "request_id",
-	4: "trace_id",
-	5: "timestamp",
-	6: "metadata",
+	3: "timestamp",
+	4: "metadata",
 }
 
 func (p *BaseResponseDTO) IsSetMetadata() bool {
@@ -985,8 +971,6 @@ func (p *BaseResponseDTO) Read(iprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	var issetCode bool = false
 	var issetMessage bool = false
-	var issetRequestID bool = false
-	var issetTraceID bool = false
 	var issetTimestamp bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
@@ -1022,35 +1006,17 @@ func (p *BaseResponseDTO) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetRequestID = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetTraceID = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
 			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField5(iprot); err != nil {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetTimestamp = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 6:
+		case 4:
 			if fieldTypeId == thrift.MAP {
-				if err = p.ReadField6(iprot); err != nil {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1079,18 +1045,8 @@ func (p *BaseResponseDTO) Read(iprot thrift.TProtocol) (err error) {
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetRequestID {
-		fieldId = 3
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetTraceID {
-		fieldId = 4
-		goto RequiredFieldNotSetError
-	}
-
 	if !issetTimestamp {
-		fieldId = 5
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -1135,28 +1091,6 @@ func (p *BaseResponseDTO) ReadField2(iprot thrift.TProtocol) error {
 }
 func (p *BaseResponseDTO) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.RequestID = _field
-	return nil
-}
-func (p *BaseResponseDTO) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.TraceID = _field
-	return nil
-}
-func (p *BaseResponseDTO) ReadField5(iprot thrift.TProtocol) error {
-
 	var _field core.TimestampMS
 	if v, err := iprot.ReadI64(); err != nil {
 		return err
@@ -1166,7 +1100,7 @@ func (p *BaseResponseDTO) ReadField5(iprot thrift.TProtocol) error {
 	p.Timestamp = _field
 	return nil
 }
-func (p *BaseResponseDTO) ReadField6(iprot thrift.TProtocol) error {
+func (p *BaseResponseDTO) ReadField4(iprot thrift.TProtocol) error {
 	_, _, size, err := iprot.ReadMapBegin()
 	if err != nil {
 		return err
@@ -1216,14 +1150,6 @@ func (p *BaseResponseDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -1279,10 +1205,10 @@ WriteFieldEndError:
 }
 
 func (p *BaseResponseDTO) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("request_id", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("timestamp", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.RequestID); err != nil {
+	if err := oprot.WriteI64(p.Timestamp); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1296,42 +1222,8 @@ WriteFieldEndError:
 }
 
 func (p *BaseResponseDTO) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("trace_id", thrift.STRING, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.TraceID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *BaseResponseDTO) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("timestamp", thrift.I64, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.Timestamp); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-
-func (p *BaseResponseDTO) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetMetadata() {
-		if err = oprot.WriteFieldBegin("metadata", thrift.MAP, 6); err != nil {
+		if err = oprot.WriteFieldBegin("metadata", thrift.MAP, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.Metadata)); err != nil {
@@ -1354,9 +1246,9 @@ func (p *BaseResponseDTO) writeField6(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *BaseResponseDTO) String() string {
