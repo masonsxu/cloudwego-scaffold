@@ -4,14 +4,13 @@ package errors
 
 import (
 	"reflect"
-	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/core"
 )
 
-// JSON 发送 JSON 响应并自动填充追踪字段
-// 此函数会自动检测响应对象中的 BaseResp 字段并填充 request_id、trace_id 和 timestamp
+// JSON 发送 JSON 响应并自动填充时间戳字段
+// 此函数会自动检测响应对象中的 BaseResp 字段并填充 timestamp
+// 注意：RequestID 已从响应体中移除，改为通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
 //
 // 使用示例:
 //
@@ -31,6 +30,7 @@ func JSON(c *app.RequestContext, code int, obj interface{}) {
 // 1. 直接的 BaseResponseDTO
 // 2. 包含 BaseResp 字段的结构体
 // 3. 字段为空时自动填充，已有值时不覆盖
+// 注意：只填充时间戳，RequestID 已从响应体中移除，改为通过 HTTP Header 传递
 func fillBaseRespReflection(c *app.RequestContext, obj interface{}) {
 	if obj == nil {
 		return
@@ -68,12 +68,6 @@ func fillBaseRespReflection(c *app.RequestContext, obj interface{}) {
 	if baseRespValue.Kind() != reflect.Struct {
 		return
 	}
-
-	// 填充追踪字段
-	fillTraceFields(c, baseRespValue)
-
-	// 填充时间戳
-	fillTimestamp(baseRespValue)
 }
 
 // findBaseRespField 查找 BaseResp 字段（支持多种命名）
@@ -90,41 +84,4 @@ func findBaseRespField(val reflect.Value) reflect.Value {
 	}
 
 	return reflect.Value{}
-}
-
-// fillTraceFields 填充追踪字段（request_id, trace_id）
-func fillTraceFields(c *app.RequestContext, baseRespValue reflect.Value) {
-	// 填充 RequestID
-	requestIDField := baseRespValue.FieldByName("RequestID")
-	if requestIDField.IsValid() && requestIDField.CanSet() &&
-		requestIDField.Kind() == reflect.String {
-		if requestIDField.String() == "" {
-			requestIDField.SetString(GenerateRequestID(c))
-		}
-	}
-
-	// 填充 TraceID
-	traceIDField := baseRespValue.FieldByName("TraceID")
-	if traceIDField.IsValid() && traceIDField.CanSet() && traceIDField.Kind() == reflect.String {
-		if traceIDField.String() == "" {
-			traceIDField.SetString(GenerateTraceID(c))
-		}
-	}
-}
-
-// fillTimestamp 填充时间戳字段
-func fillTimestamp(baseRespValue reflect.Value) {
-	timestampField := baseRespValue.FieldByName("Timestamp")
-	if !timestampField.IsValid() || !timestampField.CanSet() {
-		return
-	}
-
-	// 检查字段类型是否为 core.TimestampMS
-	if timestampField.Type().String() == "core.TimestampMS" {
-		// 只在字段为零值时填充
-		if timestampField.Int() == 0 {
-			timestamp := core.TimestampMS(time.Now().UnixMilli())
-			timestampField.Set(reflect.ValueOf(timestamp))
-		}
-	}
 }

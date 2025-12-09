@@ -42,8 +42,6 @@ func (m *JWTMiddlewareImpl) MiddlewareFunc() app.HandlerFunc {
 					BaseResp: &http_base.BaseResponseDTO{
 						Code:      errors.ErrJWTTokenExpired.Code(),
 						Message:   errors.ErrJWTTokenExpired.Message(),
-						RequestID: errors.GenerateRequestID(c),
-						TraceID:   errors.GenerateTraceID(c),
 						Timestamp: time.Now().UnixMilli(),
 					},
 				})

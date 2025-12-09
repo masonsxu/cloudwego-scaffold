@@ -59,8 +59,6 @@ func loginResponseHandler(
 	c.JSON(http.StatusOK, &http_base.BaseResponseDTO{
 		Code:      errors.ErrSuccess.Code(),
 		Message:   errors.ErrSuccess.Message(),
-		RequestID: errors.GenerateRequestID(c),
-		TraceID:   errors.GenerateTraceID(c),
 		Timestamp: time.Now().UnixMilli(),
 	})
 }
@@ -76,8 +74,6 @@ func logoutResponseHandler(
 		BaseResp: &http_base.BaseResponseDTO{
 			Code:      errors.ErrSuccess.Code(),
 			Message:   errors.ErrSuccess.Message(),
-			RequestID: errors.GenerateRequestID(c),
-			TraceID:   errors.GenerateTraceID(c),
 			Timestamp: time.Now().UnixMilli(),
 		},
 	}
@@ -101,8 +97,6 @@ func refreshResponseHandler(
 		BaseResp: &http_base.BaseResponseDTO{
 			Code:      errors.ErrSuccess.Code(),
 			Message:   errors.ErrSuccess.Message(),
-			RequestID: errors.GenerateRequestID(c),
-			TraceID:   errors.GenerateTraceID(c),
 			Timestamp: time.Now().UnixMilli(),
 		},
 		TokenInfo: tokenInfo,
@@ -174,16 +168,12 @@ func customHTTPStatusMessageFunc(
 
 	// 生成标准化的错误响应
 	httpStatus := errors.GetHTTPStatus(apiError.Code())
-	requestID := errors.GenerateRequestID(c)
-	traceID := errors.GenerateTraceID(c)
 	timestamp := time.Now().UnixMilli()
 
 	response := &http_base.OperationStatusResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
 			Code:      apiError.Code(),
 			Message:   apiError.Message(),
-			RequestID: requestID,
-			TraceID:   traceID,
 			Timestamp: timestamp,
 		},
 	}
