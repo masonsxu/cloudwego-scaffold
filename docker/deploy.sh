@@ -30,7 +30,7 @@ COMPOSE_DEV="$SCRIPT_DIR/docker-compose.dev.yml"
 COMPOSE_PROD="$SCRIPT_DIR/docker-compose.prod.yml"
 
 # 服务分组定义
-BASE_SERVICES="postgres etcd rustfs"
+BASE_SERVICES="postgres etcd rustfs redis"
 APP_SERVICES="identity_srv gateway"
 
 # 颜色输出
@@ -71,7 +71,7 @@ ${BLUE}环境（可选）：${NC}
 
 ${BLUE}操作：${NC}
     up              启动所有服务
-    up-base         仅启动基础服务（postgres、etcd、rustfs）
+    up-base         仅启动基础服务（postgres、etcd、rustfs、redis）
     up-app          仅启动应用服务（需要基础服务已运行）
     down            停止所有服务
     restart         重启所有服务
@@ -149,6 +149,7 @@ ${BLUE}服务列表：${NC}
     - postgres          PostgreSQL 数据库
     - etcd              服务注册与发现
     - rustfs            S3 兼容对象存储
+    - redis             Redis 缓存数据库
     - identity_srv      身份认证服务
     - permission_srv    权限管理服务
     - api_gateway       API 网关
@@ -348,7 +349,7 @@ follow_logs() {
 
     if [ -z "$service" ]; then
         log_error "请指定服务名称"
-        echo "可用服务: identity_srv, api_gateway, postgres, etcd, rustfs"
+        echo "可用服务: identity_srv, api_gateway, postgres, etcd, rustfs, redis"
         exit 1
     fi
 
@@ -379,7 +380,7 @@ exec_container() {
 
     if [ -z "$service" ]; then
         log_error "请指定服务名称"
-        echo "可用服务: identity_srv, api_gateway, postgres, etcd, rustfs"
+        echo "可用服务: identity_srv, api_gateway, postgres, etcd, rustfs, redis"
         exit 1
     fi
 
@@ -643,7 +644,7 @@ status_by_group() {
     cd "$SCRIPT_DIR"
 
     echo -e "${GREEN}=== 基础服务状态 ===${NC}"
-    $COMPOSE_CMD $compose_files ps | grep -E "(NAME|postgres|etcd|rustfs)" | grep -v "identity\|gateway"
+    $COMPOSE_CMD $compose_files ps | grep -E "(NAME|postgres|etcd|rustfs|redis)" | grep -v "identity\|gateway"
 
     echo
     echo -e "${GREEN}=== 应用服务状态 ===${NC}"
@@ -659,6 +660,7 @@ show_service_info() {
     echo -e "${GREEN}基础设施:${NC}"
     echo -e "${GREEN}PostgreSQL:${NC}      localhost:5432"
     echo -e "${GREEN}etcd:${NC}            localhost:2379"
+    echo -e "${GREEN}Redis:${NC}          localhost:6379"
     echo -e "${GREEN}RustFS API:${NC}      http://localhost:9000"
     echo -e "${GREEN}RustFS Console:${NC}  http://localhost:9001"
     echo

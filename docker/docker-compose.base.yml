@@ -65,7 +65,7 @@ services:
       start_period: 10s
 
   rustfs:
-    image: m.daocloud.io/docker.io/rustfs/rustfs:latest
+    image: m.daocloud.io/docker.io/rustfs/rustfs:1.0.0-alpha.72
     container_name: rustfs
     hostname: rustfs
     environment:
@@ -86,6 +86,40 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
+  redis:
+    image: m.daocloud.io/docker.io/library/redis:8.4.0
+    container_name: redis
+    hostname: redis
+    command: >
+      sh -c "
+      if [ -n \"$$REDIS_PASSWORD\" ]; then
+        redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"
+      else
+        redis-server --appendonly yes
+      fi
+      "
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    networks:
+      cloudwego-scaffold-network:
+        aliases:
+          - redis
+    healthcheck:
+      test: >
+        sh -c "
+        if [ -n \"$$REDIS_PASSWORD\" ]; then
+          redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG || exit 1
+        else
+          redis-cli ping | grep PONG || exit 1
+        fi
+        "
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ===========================================================================
   # 应用服务
@@ -278,3 +312,5 @@ volumes:
     name: postgres-data
   rustfs_data:
     name: rustfs-data
+  redis_data:
+    name: redis-data
