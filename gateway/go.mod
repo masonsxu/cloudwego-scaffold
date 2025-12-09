@@ -15,7 +15,6 @@ require (
 	github.com/kitex-contrib/registry-etcd v0.3.0
 	github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv v0.0.0-00010101000000-000000000000
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/oklog/ulid/v2 v2.1.1
 	github.com/redis/go-redis/v9 v9.16.0
 	github.com/spf13/viper v1.21.0
 	github.com/swaggo/files v1.0.1
@@ -54,6 +53,8 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
+	github.com/hertz-contrib/etag v0.1.0 // indirect
+	github.com/hertz-contrib/requestid v1.1.0 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/jhump/protoreflect v1.8.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
