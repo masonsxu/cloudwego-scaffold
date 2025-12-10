@@ -9,7 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "debug",
-      "program": "${workspaceFolder}/api/gateway", // 根据你的实际路径调整
+      "program": "${workspaceFolder}/gateway", // 根据你的实际路径调整
       "env": {
         "SERVER_PORT": "9080"
       },
