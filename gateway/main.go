@@ -8,8 +8,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/hertz-contrib/etag"
-	"github.com/hertz-contrib/requestid"
 	identityHandler "github.com/masonsxu/cloudwego-scaffold/gateway/biz/handler/identity"
 	permissionHandler "github.com/masonsxu/cloudwego-scaffold/gateway/biz/handler/permission"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware"
@@ -38,11 +36,6 @@ func main() {
 	// init server
 	addr := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
 	h := server.New(server.WithHostPorts(addr), server.WithMaxRequestBodySize(100*1024*1024))
-	// 使用 etag 中间件
-	h.Use(etag.New())
-	// 使用 requestid 中间件（必须在 trace_middleware 之前）
-	// requestid 中间件会自动从 X-Request-ID header 获取或生成 requestID，并添加到响应头中
-	h.Use(requestid.New())
 
 	// 初始化中间件（不包含 Casbin 全局中间件）
 	middleware.DefaultMiddleware(

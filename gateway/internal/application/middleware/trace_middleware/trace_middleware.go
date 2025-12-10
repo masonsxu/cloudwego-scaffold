@@ -1,6 +1,6 @@
-// Package trace_middleware 提供请求追踪中间件
+// Package middleware 提供请求追踪中间件
 // 负责将 requestid 中间件生成的 RequestID 注入到 RPC 调用链中
-package trace_middleware
+package middleware
 
 import (
 	"context"

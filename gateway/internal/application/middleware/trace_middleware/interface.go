@@ -1,6 +1,6 @@
-// Package trace_middleware 提供请求追踪中间件
+// Package middleware 提供请求追踪中间件
 // 负责生成/提取请求追踪信息并传播到后续调用链
-package trace_middleware
+package middleware
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
