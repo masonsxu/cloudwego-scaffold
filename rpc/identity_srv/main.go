@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
 	"net"
 	"net/http"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/config"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/internal/middleware"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/kitex_gen/identity_srv/identityservice"
+	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/wire"
 )
 
 // dbForHealthCheck 用于健康检查的数据库连接
@@ -121,8 +121,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// 初始化 logger
+	logger, err := wire.InitializeLogger()
+	if err != nil {
+		log.Fatalf("failed to initialize logger: %v", err)
+	}
+
 	// 创建MetaInfo中间件
-	metaMiddleware := middleware.NewMetaInfoMiddleware(slog.Default())
+	metaMiddleware := middleware.NewMetaInfoMiddleware(logger)
 
 	// 创建并配置 Kitex Server
 	svr := identityservice.NewServer(

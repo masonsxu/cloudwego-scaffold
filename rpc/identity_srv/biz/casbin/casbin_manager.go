@@ -2,11 +2,11 @@ package casbin
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/config"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/models"
@@ -16,14 +16,14 @@ import (
 type CasbinManager struct {
 	enforcer *casbin.Enforcer
 	db       *gorm.DB
-	logger   *slog.Logger
+	logger   *zerolog.Logger
 }
 
 // NewCasbinManager 创建 Casbin 管理器
 func NewCasbinManager(
 	db *gorm.DB,
 	config *config.CasbinConfig,
-	logger *slog.Logger,
+	logger *zerolog.Logger,
 ) (*CasbinManager, error) {
 	// 1. 确保数据表存在
 	err := db.AutoMigrate(&models.CasbinRule{})
@@ -54,11 +54,11 @@ func NewCasbinManager(
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
 
-	logger.Info("Casbin manager initialized successfully",
-		"model_path", config.ModelPath,
-		"auto_save", true,
-		"auto_build_role_links", true,
-	)
+	logger.Info().
+		Str("model_path", config.ModelPath).
+		Bool("auto_save", true).
+		Bool("auto_build_role_links", true).
+		Msg("Casbin manager initialized successfully")
 
 	return &CasbinManager{
 		enforcer: enforcer,
@@ -80,9 +80,15 @@ func (cm *CasbinManager) AddUserRole(userID, roleID string) error {
 	}
 
 	if !added {
-		cm.logger.Debug("用户角色关系已存在", "user_id", userID, "role_id", roleID)
+		cm.logger.Debug().
+			Str("user_id", userID).
+			Str("role_id", roleID).
+			Msg("用户角色关系已存在")
 	} else {
-		cm.logger.Info("用户角色添加成功", "user_id", userID, "role_id", roleID)
+		cm.logger.Info().
+			Str("user_id", userID).
+			Str("role_id", roleID).
+			Msg("用户角色添加成功")
 	}
 
 	return nil
@@ -96,9 +102,15 @@ func (cm *CasbinManager) RemoveUserRole(userID, roleID string) error {
 	}
 
 	if !removed {
-		cm.logger.Debug("用户角色关系不存在", "user_id", userID, "role_id", roleID)
+		cm.logger.Debug().
+			Str("user_id", userID).
+			Str("role_id", roleID).
+			Msg("用户角色关系不存在")
 	} else {
-		cm.logger.Info("用户角色移除成功", "user_id", userID, "role_id", roleID)
+		cm.logger.Info().
+			Str("user_id", userID).
+			Str("role_id", roleID).
+			Msg("用户角色移除成功")
 	}
 
 	return nil
@@ -111,7 +123,10 @@ func (cm *CasbinManager) GetUserRoles(userID string) ([]string, error) {
 		return nil, fmt.Errorf("获取用户角色失败: %w", err)
 	}
 
-	cm.logger.Debug("获取用户角色", "user_id", userID, "roles", roles)
+	cm.logger.Debug().
+		Str("user_id", userID).
+		Interface("roles", roles).
+		Msg("获取用户角色")
 	return roles, nil
 }
 
@@ -123,9 +138,17 @@ func (cm *CasbinManager) AddRolePermission(roleID, resource, action string) erro
 	}
 
 	if !added {
-		cm.logger.Debug("角色权限已存在", "role_id", roleID, "resource", resource, "action", action)
+		cm.logger.Debug().
+			Str("role_id", roleID).
+			Str("resource", resource).
+			Str("action", action).
+			Msg("角色权限已存在")
 	} else {
-		cm.logger.Info("角色权限添加成功", "role_id", roleID, "resource", resource, "action", action)
+		cm.logger.Info().
+			Str("role_id", roleID).
+			Str("resource", resource).
+			Str("action", action).
+			Msg("角色权限添加成功")
 	}
 
 	return nil
@@ -139,9 +162,17 @@ func (cm *CasbinManager) RemoveRolePermission(roleID, resource, action string) e
 	}
 
 	if !removed {
-		cm.logger.Debug("角色权限不存在", "role_id", roleID, "resource", resource, "action", action)
+		cm.logger.Debug().
+			Str("role_id", roleID).
+			Str("resource", resource).
+			Str("action", action).
+			Msg("角色权限不存在")
 	} else {
-		cm.logger.Info("角色权限移除成功", "role_id", roleID, "resource", resource, "action", action)
+		cm.logger.Info().
+			Str("role_id", roleID).
+			Str("resource", resource).
+			Str("action", action).
+			Msg("角色权限移除成功")
 	}
 
 	return nil
@@ -181,9 +212,17 @@ func (cm *CasbinManager) AddRoleMenuMapping(roleID, menuID, permission string) e
 	}
 
 	if !added {
-		cm.logger.Debug("角色菜单映射已存在", "role_id", roleID, "menu_id", menuID, "permission", permission)
+		cm.logger.Debug().
+			Str("role_id", roleID).
+			Str("menu_id", menuID).
+			Str("permission", permission).
+			Msg("角色菜单映射已存在")
 	} else {
-		cm.logger.Info("角色菜单映射添加成功", "role_id", roleID, "menu_id", menuID, "permission", permission)
+		cm.logger.Info().
+			Str("role_id", roleID).
+			Str("menu_id", menuID).
+			Str("permission", permission).
+			Msg("角色菜单映射添加成功")
 	}
 
 	return nil
@@ -197,9 +236,17 @@ func (cm *CasbinManager) RemoveRoleMenuMapping(roleID, menuID, permission string
 	}
 
 	if !removed {
-		cm.logger.Debug("角色菜单映射不存在", "role_id", roleID, "menu_id", menuID, "permission", permission)
+		cm.logger.Debug().
+			Str("role_id", roleID).
+			Str("menu_id", menuID).
+			Str("permission", permission).
+			Msg("角色菜单映射不存在")
 	} else {
-		cm.logger.Info("角色菜单映射移除成功", "role_id", roleID, "menu_id", menuID, "permission", permission)
+		cm.logger.Info().
+			Str("role_id", roleID).
+			Str("menu_id", menuID).
+			Str("permission", permission).
+			Msg("角色菜单映射移除成功")
 	}
 
 	return nil
@@ -224,7 +271,10 @@ func (cm *CasbinManager) ClearRoleMenuMappings(roleID string) error {
 		return fmt.Errorf("清空角色菜单映射失败: %w", err)
 	}
 
-	cm.logger.Info("角色菜单映射清空成功", "role_id", roleID, "removed_count", removed)
+	cm.logger.Info().
+		Str("role_id", roleID).
+		Bool("removed", removed).
+		Msg("角色菜单映射清空成功")
 	return nil
 }
 
@@ -240,19 +290,19 @@ func (cm *CasbinManager) SyncUserRoles(userID string, roleIDs []string) error {
 	for _, roleID := range roleIDs {
 		err = cm.AddUserRole(userID, roleID)
 		if err != nil {
-			cm.logger.Error("为用户添加角色失败",
-				"user_id", userID,
-				"role_id", roleID,
-				"error", err,
-			)
+			cm.logger.Error().
+				Str("user_id", userID).
+				Str("role_id", roleID).
+				Err(err).
+				Msg("为用户添加角色失败")
 			// 继续处理其他角色，不直接返回错误
 		}
 	}
 
-	cm.logger.Info("用户角色同步成功",
-		"user_id", userID,
-		"role_ids", roleIDs,
-	)
+	cm.logger.Info().
+		Str("user_id", userID).
+		Interface("role_ids", roleIDs).
+		Msg("用户角色同步成功")
 
 	return nil
 }

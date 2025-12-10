@@ -3,21 +3,21 @@ package middleware
 import (
 	"bytes"
 	"context"
-	"log/slog"
 	"testing"
 
 	"github.com/bytedance/gopkg/cloud/metainfo"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewMetaInfoMiddleware(t *testing.T) {
 	t.Run("with custom logger", func(t *testing.T) {
-		logger := slog.Default()
-		middleware := NewMetaInfoMiddleware(logger)
+		logger := zerolog.Nop()
+		middleware := NewMetaInfoMiddleware(&logger)
 
 		assert.NotNil(t, middleware)
-		assert.Equal(t, logger, middleware.logger)
+		assert.Equal(t, &logger, middleware.logger)
 	})
 
 	t.Run("with nil logger uses default", func(t *testing.T) {
@@ -138,11 +138,9 @@ func TestMetaInfoMiddleware_ServerMiddleware(t *testing.T) {
 			// Create logger with buffer to capture logs
 			var logBuf bytes.Buffer
 
-			logger := slog.New(slog.NewTextHandler(&logBuf, &slog.HandlerOptions{
-				Level: slog.LevelDebug,
-			}))
+			logger := zerolog.New(&logBuf).With().Timestamp().Logger()
 
-			middleware := NewMetaInfoMiddleware(logger)
+			middleware := NewMetaInfoMiddleware(&logger)
 			serverMiddleware := middleware.ServerMiddleware()
 
 			// Create context with existing meta info
@@ -171,7 +169,8 @@ func TestMetaInfoMiddleware_ServerMiddleware(t *testing.T) {
 }
 
 func TestMetaInfoMiddleware_ensureTraceIDs(t *testing.T) {
-	middleware := NewMetaInfoMiddleware(slog.Default())
+	logger := zerolog.Nop()
+	middleware := NewMetaInfoMiddleware(&logger)
 
 	t.Run("generates valid UUIDs", func(t *testing.T) {
 		ctx := context.Background()
@@ -207,11 +206,9 @@ func TestMetaInfoMiddleware_ensureTraceIDs(t *testing.T) {
 func TestMetaInfoMiddleware_logTraceInfo(t *testing.T) {
 	var logBuf bytes.Buffer
 
-	logger := slog.New(slog.NewTextHandler(&logBuf, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	logger := zerolog.New(&logBuf).With().Timestamp().Logger()
 
-	middleware := NewMetaInfoMiddleware(logger)
+	middleware := NewMetaInfoMiddleware(&logger)
 
 	t.Run("logs trace info when IDs present", func(t *testing.T) {
 		ctx := createContextWithMeta(map[string]string{
@@ -225,7 +222,7 @@ func TestMetaInfoMiddleware_logTraceInfo(t *testing.T) {
 		assert.Contains(t, logOutput, "RPC request received")
 		assert.Contains(t, logOutput, "test-request-id")
 		assert.Contains(t, logOutput, "test-trace-id")
-		assert.Contains(t, logOutput, "middleware=trace")
+		assert.Contains(t, logOutput, `"middleware":"trace"`)
 	})
 
 	t.Run("handles empty context gracefully", func(t *testing.T) {
@@ -296,15 +293,8 @@ func TestLoggingAttrs(t *testing.T) {
 		attrs := LoggingAttrs(ctx)
 
 		assert.Len(t, attrs, 2)
-
-		// Convert to map for easier testing
-		attrMap := make(map[string]string)
-		for _, attr := range attrs {
-			attrMap[attr.Key] = attr.Value.String()
-		}
-
-		assert.Equal(t, "test-request-id", attrMap["request_id"])
-		assert.Equal(t, "test-trace-id", attrMap["trace_id"])
+		assert.Equal(t, "test-request-id", attrs["request_id"])
+		assert.Equal(t, "test-trace-id", attrs["trace_id"])
 	})
 
 	t.Run("returns only available attributes", func(t *testing.T) {
@@ -315,11 +305,10 @@ func TestLoggingAttrs(t *testing.T) {
 		attrs := LoggingAttrs(ctx)
 
 		assert.Len(t, attrs, 1)
-		assert.Equal(t, "request_id", attrs[0].Key)
-		assert.Equal(t, "test-request-id", attrs[0].Value.String())
+		assert.Equal(t, "test-request-id", attrs["request_id"])
 	})
 
-	t.Run("returns empty slice when no IDs present", func(t *testing.T) {
+	t.Run("returns empty map when no IDs present", func(t *testing.T) {
 		ctx := context.Background()
 
 		attrs := LoggingAttrs(ctx)
@@ -332,11 +321,9 @@ func TestMetaInfoMiddleware_Integration(t *testing.T) {
 	t.Run("complete middleware flow with ID generation", func(t *testing.T) {
 		var logBuf bytes.Buffer
 
-		logger := slog.New(slog.NewTextHandler(&logBuf, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		}))
+		logger := zerolog.New(&logBuf).With().Timestamp().Logger()
 
-		middleware := NewMetaInfoMiddleware(logger)
+		middleware := NewMetaInfoMiddleware(&logger)
 		serverMiddleware := middleware.ServerMiddleware()
 
 		// Start with empty context
@@ -373,7 +360,8 @@ func TestMetaInfoMiddleware_Integration(t *testing.T) {
 	})
 
 	t.Run("middleware handles metainfo correctly", func(t *testing.T) {
-		middleware := NewMetaInfoMiddleware(slog.Default())
+		logger := zerolog.Nop()
+		middleware := NewMetaInfoMiddleware(&logger)
 		serverMiddleware := middleware.ServerMiddleware()
 
 		// Create context with metainfo values
@@ -412,7 +400,8 @@ func createContextWithMeta(metaInfo map[string]string) context.Context {
 // Benchmark tests for performance validation
 
 func BenchmarkMetaInfoMiddleware_WithExistingIDs(b *testing.B) {
-	middleware := NewMetaInfoMiddleware(slog.Default())
+	logger := zerolog.Nop()
+	middleware := NewMetaInfoMiddleware(&logger)
 	serverMiddleware := middleware.ServerMiddleware()
 
 	ctx := createContextWithMeta(map[string]string{
@@ -434,7 +423,8 @@ func BenchmarkMetaInfoMiddleware_WithExistingIDs(b *testing.B) {
 }
 
 func BenchmarkMetaInfoMiddleware_WithGeneration(b *testing.B) {
-	middleware := NewMetaInfoMiddleware(slog.Default())
+	logger := zerolog.Nop()
+	middleware := NewMetaInfoMiddleware(&logger)
 	serverMiddleware := middleware.ServerMiddleware()
 
 	ctx := context.Background()

@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
 )
 
@@ -42,11 +42,11 @@ type TokenCacheService interface {
 // TokenCache Token缓存服务实现
 type TokenCache struct {
 	client *Client
-	logger *slog.Logger
+	logger *hertzZerolog.Logger
 }
 
 // NewTokenCache 创建Token缓存服务
-func NewTokenCache(client *Client, logger *slog.Logger) TokenCacheService {
+func NewTokenCache(client *Client, logger *hertzZerolog.Logger) TokenCacheService {
 	return &TokenCache{
 		client: client,
 		logger: logger,
@@ -93,11 +93,11 @@ func (tc *TokenCache) CacheToken(
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		tc.logger.Error("Failed to cache token", "error", err, "userID", userID)
+		tc.logger.Errorf("Failed to cache token: error=%v, userID=%s", err, userID)
 		return fmt.Errorf("缓存Token失败: %w", err)
 	}
 
-	tc.logger.Info("Token cached successfully", "userID", userID, "expiration", expiration)
+	tc.logger.Infof("Token cached successfully: userID=%s, expiration=%v", userID, expiration)
 
 	return nil
 }
@@ -154,11 +154,11 @@ func (tc *TokenCache) RemoveToken(ctx context.Context, token string) error {
 
 	_, err = pipe.Exec(ctx)
 	if err != nil {
-		tc.logger.Error("Failed to remove token", "error", err)
+		tc.logger.Errorf("Failed to remove token: error=%v", err)
 		return fmt.Errorf("删除Token缓存失败: %w", err)
 	}
 
-	tc.logger.Info("Token removed successfully")
+	tc.logger.Infof("Token removed successfully")
 
 	return nil
 }
@@ -174,11 +174,11 @@ func (tc *TokenCache) RefreshTokenExpiration(
 
 	err := tc.client.Expire(ctx, tokenKey, expiration)
 	if err != nil {
-		tc.logger.Error("Failed to refresh token expiration", "error", err)
+		tc.logger.Errorf("Failed to refresh token expiration: error=%v", err)
 		return fmt.Errorf("刷新Token过期时间失败: %w", err)
 	}
 
-	tc.logger.Info("Token expiration refreshed", "expiration", expiration)
+	tc.logger.Infof("Token expiration refreshed: expiration=%v", expiration)
 
 	return nil
 }
@@ -190,7 +190,7 @@ func (tc *TokenCache) RemoveUserTokens(ctx context.Context, userID string) error
 	// 获取用户所有Token
 	tokenHashes, err := tc.client.SMembers(ctx, userTokensKey)
 	if err != nil {
-		tc.logger.Error("Failed to get user tokens", "error", err, "userID", userID)
+		tc.logger.Errorf("Failed to get user tokens: error=%v, userID=%s", err, userID)
 		return fmt.Errorf("获取用户Token列表失败: %w", err)
 	}
 
@@ -208,28 +208,16 @@ func (tc *TokenCache) RemoveUserTokens(ctx context.Context, userID string) error
 
 		_, err = pipe.Exec(ctx)
 		if err != nil {
-			tc.logger.Error(
-				"Failed to batch remove user tokens",
-				"error",
-				err,
-				"userID",
-				userID,
-				"tokenCount",
-				len(tokenHashes),
-			)
+			tc.logger.Errorf("Failed to batch remove user tokens: error=%v, userID=%s, tokenCount=%d",
+				err, userID, len(tokenHashes))
 
 			return fmt.Errorf("批量删除用户Token失败: %w", err)
 		}
 
-		tc.logger.Info(
-			"User tokens removed successfully",
-			"userID",
-			userID,
-			"tokenCount",
-			len(tokenHashes),
-		)
+		tc.logger.Infof("User tokens removed successfully: userID=%s, tokenCount=%d",
+			userID, len(tokenHashes))
 	} else {
-		tc.logger.Info("No tokens found for user", "userID", userID)
+		tc.logger.Infof("No tokens found for user: userID=%s", userID)
 	}
 
 	return nil
@@ -241,11 +229,11 @@ func (tc *TokenCache) GetUserTokens(ctx context.Context, userID string) ([]strin
 
 	tokenHashes, err := tc.client.SMembers(ctx, userTokensKey)
 	if err != nil {
-		tc.logger.Error("Failed to get user tokens", "error", err, "userID", userID)
+		tc.logger.Errorf("Failed to get user tokens: error=%v, userID=%s", err, userID)
 		return nil, fmt.Errorf("获取用户Token列表失败: %w", err)
 	}
 
-	tc.logger.Debug("Retrieved user tokens", "userID", userID, "tokenCount", len(tokenHashes))
+	tc.logger.Debugf("Retrieved user tokens: userID=%s, tokenCount=%d", userID, len(tokenHashes))
 
 	return tokenHashes, nil
 }
@@ -269,11 +257,11 @@ func (tc *TokenCache) RevokeToken(
 
 	err := tc.client.GetClient().Set(ctx, tokenKey, revokedAt, expiration).Err()
 	if err != nil {
-		tc.logger.Error("Failed to revoke token", "error", err)
+		tc.logger.Errorf("Failed to revoke token: error=%v", err)
 		return fmt.Errorf("吊销Token失败: %w", err)
 	}
 
-	tc.logger.Info("Token revoked successfully", "expiration", expiration)
+	tc.logger.Infof("Token revoked successfully: expiration=%v", expiration)
 
 	return nil
 }
@@ -285,7 +273,7 @@ func (tc *TokenCache) IsTokenRevoked(ctx context.Context, token string) (bool, e
 
 	exists, err := tc.client.Exists(ctx, tokenKey)
 	if err != nil {
-		tc.logger.Error("Failed to check if token is revoked", "error", err)
+		tc.logger.Errorf("Failed to check if token is revoked: error=%v", err)
 		return false, fmt.Errorf("检查Token吊销状态失败: %w", err)
 	}
 
@@ -298,6 +286,6 @@ func ProvideRedisClient(cfg *config.RedisConfig) (*Client, error) {
 }
 
 // ProvideTokenCache 提供Token缓存服务
-func ProvideTokenCache(client *Client, logger *slog.Logger) TokenCacheService {
+func ProvideTokenCache(client *Client, logger *hertzZerolog.Logger) TokenCacheService {
 	return NewTokenCache(client, logger)
 }

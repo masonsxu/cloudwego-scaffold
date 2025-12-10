@@ -3,7 +3,7 @@ package permission
 import (
 	"context"
 	"fmt"
-	"log/slog"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/permission"
@@ -24,7 +24,7 @@ type menuServiceImpl struct {
 func NewMenuService(
 	identityClient identitycli.IdentityClient,
 	assembler permissionConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) MenuService {
 	return &menuServiceImpl{
 		BaseService:    common.NewBaseService(logger),

@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 	"time"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/jwt"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
@@ -20,7 +20,7 @@ type JWTMiddlewareImpl struct {
 	mw             *jwt.HertzJWTMiddleware
 	tokenCache     TokenCacheService
 	tokenExtractor TokenExtractor
-	logger         *slog.Logger
+	logger         *hertzZerolog.Logger
 }
 
 // MiddlewareFunc 返回JWT认证中间件函数
@@ -37,7 +37,7 @@ func (m *JWTMiddlewareImpl) MiddlewareFunc() app.HandlerFunc {
 		if tokenString != "" {
 			if isRevoked, err := m.tokenCache.IsTokenRevoked(ctx, tokenString); err == nil &&
 				isRevoked {
-				m.logger.WarnContext(ctx, "Access denied: token has been revoked")
+				m.logger.Warnf("Access denied: token has been revoked")
 				c.JSON(http.StatusUnauthorized, &http_base.OperationStatusResponseDTO{
 					BaseResp: &http_base.BaseResponseDTO{
 						Code:      errors.ErrJWTTokenExpired.Code(),
@@ -67,7 +67,7 @@ func (m *JWTMiddlewareImpl) LogoutHandler(ctx context.Context, c *app.RequestCon
 	// 从请求中提取token字符串
 	tokenString := m.tokenExtractor.ExtractToken(c)
 	if tokenString == "" {
-		m.logger.WarnContext(ctx, "No token found in request during logout")
+		m.logger.Warnf("No token found in request during logout")
 		logoutResponseHandler(ctx, c, http.StatusOK)
 
 		return
@@ -76,18 +76,18 @@ func (m *JWTMiddlewareImpl) LogoutHandler(ctx context.Context, c *app.RequestCon
 	// 使用 hertz-contrib/jwt 提供的 ExtractClaims 获取 claims
 	claims := jwt.ExtractClaims(ctx, c)
 	if claims == nil {
-		m.logger.WarnContext(ctx, "Failed to extract claims from token")
+		m.logger.Warnf("Failed to extract claims from token")
 		logoutResponseHandler(ctx, c, http.StatusOK)
 
 		return
 	}
 
-	m.logger.DebugContext(ctx, "JWT claims extracted", "claims", claims)
+	m.logger.Debugf("JWT claims extracted: claims=%v", claims)
 
 	// 获取token过期时间
 	expClaim, exists := claims["exp"]
 	if !exists {
-		m.logger.WarnContext(ctx, "Token does not have expiration claim")
+		m.logger.Warnf("Token does not have expiration claim")
 		logoutResponseHandler(ctx, c, http.StatusOK)
 
 		return
@@ -104,7 +104,7 @@ func (m *JWTMiddlewareImpl) LogoutHandler(ctx context.Context, c *app.RequestCon
 	case int:
 		expTime = float64(v)
 	default:
-		m.logger.WarnContext(ctx, "Invalid expiration claim type")
+		m.logger.Warnf("Invalid expiration claim type")
 		logoutResponseHandler(ctx, c, http.StatusOK)
 
 		return
@@ -116,7 +116,7 @@ func (m *JWTMiddlewareImpl) LogoutHandler(ctx context.Context, c *app.RequestCon
 	now := time.Now()
 	if exp.Before(now) {
 		// token已经过期，无需吊销
-		m.logger.DebugContext(ctx, "Token already expired, no need to revoke")
+		m.logger.Debugf("Token already expired, no need to revoke")
 		logoutResponseHandler(ctx, c, http.StatusOK)
 
 		return
@@ -126,10 +126,10 @@ func (m *JWTMiddlewareImpl) LogoutHandler(ctx context.Context, c *app.RequestCon
 
 	// 吊销token
 	if err := m.tokenCache.RevokeToken(ctx, tokenString, expiration); err != nil {
-		m.logger.ErrorContext(ctx, "Failed to revoke token during logout", "error", err)
+		m.logger.Errorf("Failed to revoke token during logout: %v", err)
 		// 即使吊销失败，也继续返回登出成功
 	} else {
-		m.logger.InfoContext(ctx, "Token successfully revoked during logout")
+		m.logger.Infof("Token successfully revoked during logout")
 	}
 
 	// 返回登出响应

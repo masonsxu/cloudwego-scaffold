@@ -7,9 +7,8 @@
 package wire
 
 import (
-	"log/slog"
-
 	"github.com/google/wire"
+	"github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/permission"
 )
@@ -86,7 +85,7 @@ func InitializeMiddleware() (*MiddlewareContainer, error) {
 
 // InitializeLogger 初始化日志服务
 // 提供给外部模块使用的日志实例
-func InitializeLogger() *slog.Logger {
+func InitializeLogger() *zerolog.Logger {
 	configuration := ProvideConfig()
 	logger := ProvideLogger(configuration)
 	return logger

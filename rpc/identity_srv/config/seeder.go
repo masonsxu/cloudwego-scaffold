@@ -3,31 +3,31 @@ package config
 import (
 	"fmt"
 	"log"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/models"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/pkg/password"
+	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 // SeedDatabase 初始化数据库种子数据
 // 该函数是幂等的，可以安全地重复执行
-func SeedDatabase(db *gorm.DB, logger *slog.Logger, cfg *DatabaseConfig) error {
-	logger.Info("开始数据库种子数据初始化...")
+func SeedDatabase(db *gorm.DB, logger *zerolog.Logger, cfg *DatabaseConfig) error {
+	logger.Info().Msg("开始数据库种子数据初始化...")
 
 	// 1. 创建默认组织
 	orgID, err := seedDefaultOrganization(db, logger)
 	if err != nil {
-		logger.Error("创建默认组织失败", "error", err)
+		logger.Error().Err(err).Msg("创建默认组织失败")
 		return fmt.Errorf("创建默认组织失败: %w", err)
 	}
 
 	// 2. 创建超级管理员用户
 	userID, err := seedSuperAdminUser(db, logger)
 	if err != nil {
-		logger.Error("创建超级管理员用户失败", "error", err)
+		logger.Error().Err(err).Msg("创建超级管理员用户失败")
 		return fmt.Errorf("创建超级管理员用户失败: %w", err)
 	}
 
@@ -43,17 +43,18 @@ func SeedDatabase(db *gorm.DB, logger *slog.Logger, cfg *DatabaseConfig) error {
 		return fmt.Errorf("分配超级管理员角色失败: %w", err)
 	}
 
-	logger.Info("数据库种子数据初始化完成",
-		"default_org_id", orgID,
-		"superadmin_user_id", userID)
+	logger.Info().
+		Str("default_org_id", orgID.String()).
+		Str("superadmin_user_id", userID.String()).
+		Msg("数据库种子数据初始化完成")
 
 	return nil
 }
 
 // seedDefaultOrganization 创建默认组织
 // 使用 code="DEFAULT" 作为唯一标识，实现幂等性
-func seedDefaultOrganization(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error) {
-	logger.Info("正在创建或验证默认组织...")
+func seedDefaultOrganization(db *gorm.DB, logger *zerolog.Logger) (uuid.UUID, error) {
+	logger.Info().Msg("正在创建或验证默认组织...")
 
 	org := &models.Organization{}
 
@@ -76,9 +77,15 @@ func seedDefaultOrganization(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error
 	}
 
 	if result.RowsAffected > 0 {
-		logger.Info("✅ 默认组织创建成功", "org_id", org.ID, "code", org.Code)
+		logger.Info().
+			Str("org_id", org.ID.String()).
+			Str("code", org.Code).
+			Msg("✅ 默认组织创建成功")
 	} else {
-		logger.Info("ℹ️  默认组织已存在，跳过创建", "org_id", org.ID, "code", org.Code)
+		logger.Info().
+			Str("org_id", org.ID.String()).
+			Str("code", org.Code).
+			Msg("ℹ️  默认组织已存在，跳过创建")
 	}
 
 	return org.ID, nil
@@ -87,8 +94,8 @@ func seedDefaultOrganization(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error
 // seedSuperAdminUser 创建超级管理员用户
 // 使用 username="superadmin" 作为唯一标识，实现幂等性
 // 支持软删除记录的恢复
-func seedSuperAdminUser(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error) {
-	logger.Info("正在创建或验证超级管理员用户...")
+func seedSuperAdminUser(db *gorm.DB, logger *zerolog.Logger) (uuid.UUID, error) {
+	logger.Info().Msg("正在创建或验证超级管理员用户...")
 
 	// 生成默认密码哈希
 	defaultPassword := "password123"
@@ -113,26 +120,29 @@ func seedSuperAdminUser(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error) {
 				return uuid.Nil, fmt.Errorf("恢复软删除的超级管理员用户失败: %w", err)
 			}
 
-			logger.Info("✅ 超级管理员用户已恢复（从软删除状态）",
-				"user_id", user.ID,
-				"username", user.Username,
-				"is_system_user", true)
+			logger.Info().
+				Str("user_id", user.ID.String()).
+				Str("username", user.Username).
+				Bool("is_system_user", true).
+				Msg("✅ 超级管理员用户已恢复（从软删除状态）")
 		} else {
 			// 确保现有用户标记为系统用户
 			if !user.IsSystemUser {
 				if err := db.Model(user).Update("is_system_user", true).Error; err != nil {
-					logger.Warn("更新系统用户标记失败", "error", err)
+					logger.Warn().Err(err).Msg("更新系统用户标记失败")
 				} else {
-					logger.Info("✅ 已更新 superadmin 用户的系统用户标记",
-						"user_id", user.ID,
-						"username", user.Username)
+					logger.Info().
+						Str("user_id", user.ID.String()).
+						Str("username", user.Username).
+						Msg("✅ 已更新 superadmin 用户的系统用户标记")
 				}
 			}
 
-			logger.Info("ℹ️  超级管理员用户已存在，跳过创建",
-				"user_id", user.ID,
-				"username", user.Username,
-				"is_system_user", user.IsSystemUser)
+			logger.Info().
+				Str("user_id", user.ID.String()).
+				Str("username", user.Username).
+				Bool("is_system_user", user.IsSystemUser).
+				Msg("ℹ️  超级管理员用户已存在，跳过创建")
 		}
 
 		return user.ID, nil
@@ -159,12 +169,16 @@ func seedSuperAdminUser(db *gorm.DB, logger *slog.Logger) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("创建超级管理员用户失败: %w", err)
 	}
 
-	logger.Info("✅ 超级管理员用户创建成功",
-		"user_id", user.ID,
-		"username", user.Username,
-		"is_system_user", user.IsSystemUser,
-		"default_password", defaultPassword)
-	logger.Warn("⚠️  请及时修改默认密码！", "username", "superadmin", "password", defaultPassword)
+	logger.Info().
+		Str("user_id", user.ID.String()).
+		Str("username", user.Username).
+		Bool("is_system_user", user.IsSystemUser).
+		Str("default_password", defaultPassword).
+		Msg("✅ 超级管理员用户创建成功")
+	logger.Warn().
+		Str("username", "superadmin").
+		Str("password", defaultPassword).
+		Msg("⚠️  请及时修改默认密码！")
 
 	return user.ID, nil
 }

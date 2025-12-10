@@ -2,8 +2,7 @@
 package wire
 
 import (
-	"log/slog"
-
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/google/wire"
 	identityassembler "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
 	permissionConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/permission"
@@ -41,7 +40,7 @@ var DomainServiceSet = wire.NewSet(
 func ProvideAuthService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.AuthService {
 	return identityservice.NewAuthService(identityClient, assembler, logger)
 }
@@ -50,7 +49,7 @@ func ProvideAuthService(
 func ProvideUserService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.UserService {
 	return identityservice.NewUserManagementService(
 		identityClient,
@@ -63,7 +62,7 @@ func ProvideUserService(
 func ProvideMembershipService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.MembershipService {
 	return identityservice.NewMembershipService(identityClient, assembler, logger)
 }
@@ -72,7 +71,7 @@ func ProvideMembershipService(
 func ProvideOrganizationService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.OrganizationService {
 	return identityservice.NewOrganizationService(identityClient, assembler, logger)
 }
@@ -81,7 +80,7 @@ func ProvideOrganizationService(
 func ProvideDepartmentService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.DepartmentService {
 	return identityservice.NewDepartmentService(identityClient, assembler, logger)
 }
@@ -90,7 +89,7 @@ func ProvideDepartmentService(
 func ProvideLogoService(
 	identityClient identitycli.IdentityClient,
 	assembler identityassembler.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) identityservice.LogoService {
 	return identityservice.NewLogoService(identityClient, assembler, logger)
 }
@@ -99,7 +98,7 @@ func ProvideLogoService(
 func ProvideRoleDefinitionService(
 	identityClient identitycli.IdentityClient,
 	assembler permissionConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) permissionservice.RoleDefinitionService {
 	return permissionservice.NewRoleDefinitionService(identityClient, assembler, logger)
 }
@@ -108,7 +107,7 @@ func ProvideRoleDefinitionService(
 func ProvideUserRoleAssignmentService(
 	identityClient identitycli.IdentityClient,
 	assembler permissionConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) permissionservice.UserRoleAssignmentService {
 	return permissionservice.NewUserRoleAssignmentService(identityClient, assembler, logger)
 }
@@ -116,7 +115,7 @@ func ProvideUserRoleAssignmentService(
 func ProvideMenuService(
 	identityClient identitycli.IdentityClient,
 	assembler permissionConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) permissionservice.MenuService {
 	return permissionservice.NewMenuService(identityClient, assembler, logger)
 }

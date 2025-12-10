@@ -5,9 +5,8 @@
 package wire
 
 import (
-	"log/slog"
-
 	"github.com/google/wire"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 )
 
 // AllSet 所有依赖注入集合
@@ -45,7 +44,7 @@ func InitializeMiddleware() (*MiddlewareContainer, error) {
 
 // InitializeLogger 初始化日志服务
 // 提供给外部模块使用的日志实例
-func InitializeLogger() *slog.Logger {
+func InitializeLogger() *hertzZerolog.Logger {
 	wire.Build(AllSet)
-	return &slog.Logger{}
+	return nil
 }

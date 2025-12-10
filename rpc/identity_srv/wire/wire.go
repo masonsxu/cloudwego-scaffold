@@ -3,14 +3,13 @@
 package wire
 
 import (
-	"log/slog"
-
 	"github.com/google/wire"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/casbin"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/converter"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/dal"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/logic"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/config"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -77,7 +76,7 @@ func InitializeService() (logic.Logic, error) {
 }
 
 // InitializeLogger 仅初始化日志器
-func InitializeLogger() (*slog.Logger, error) {
+func InitializeLogger() (*zerolog.Logger, error) {
 	wire.Build(InfrastructureSet)
 	return nil, nil
 }

@@ -2,7 +2,8 @@ package identity
 
 import (
 	"context"
-	"log/slog"
+
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/identity"
 	identityConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
@@ -22,7 +23,7 @@ type membershipServiceImpl struct {
 func NewMembershipService(
 	identityClient identitycli.IdentityClient,
 	assembler identityConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) MembershipService {
 	return &membershipServiceImpl{
 		BaseService:    common.NewBaseService(logger),

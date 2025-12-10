@@ -13,8 +13,8 @@ import (
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/dal"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/biz/logic"
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/config"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 // Injectors from wire.go:
@@ -25,7 +25,10 @@ func InitializeService() (logic.Logic, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := ProvideLogger(configConfig)
+	logger, err := ProvideLogger(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	db, err := ProvideDB(configConfig, logger)
 	if err != nil {
 		return nil, err
@@ -41,12 +44,15 @@ func InitializeService() (logic.Logic, error) {
 }
 
 // InitializeLogger 仅初始化日志器
-func InitializeLogger() (*slog.Logger, error) {
+func InitializeLogger() (*zerolog.Logger, error) {
 	configConfig, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
-	logger := ProvideLogger(configConfig)
+	logger, err := ProvideLogger(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	return logger, nil
 }
 
@@ -56,7 +62,10 @@ func InitializeTestService() (logic.Logic, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := ProvideLogger(configConfig)
+	logger, err := ProvideLogger(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	db, err := ProvideDB(configConfig, logger)
 	if err != nil {
 		return nil, err
@@ -77,7 +86,10 @@ func InitializeServiceWithDB() (*ServiceWithDB, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := ProvideLogger(configConfig)
+	logger, err := ProvideLogger(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	db, err := ProvideDB(configConfig, logger)
 	if err != nil {
 		return nil, err

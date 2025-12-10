@@ -3,7 +3,8 @@ package identity
 import (
 	"context"
 	"fmt"
-	"log/slog"
+
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
@@ -26,7 +27,7 @@ type userManagementServiceImpl struct {
 func NewUserManagementService(
 	identityClient identitycli.IdentityClient,
 	assembler identityConv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) UserService {
 	return &userManagementServiceImpl{
 		BaseService:    common.NewBaseService(logger),

@@ -2,7 +2,7 @@ package permission
 
 import (
 	"context"
-	"log/slog"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/permission"
 	permissionconv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/permission"
@@ -22,7 +22,7 @@ type userRoleAssignmentServiceImpl struct {
 func NewUserRoleAssignmentService(
 	identityClient identitycli.IdentityClient,
 	assembler permissionconv.Assembler,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) UserRoleAssignmentService {
 	return &userRoleAssignmentServiceImpl{
 		BaseService:    common.NewBaseService(logger),

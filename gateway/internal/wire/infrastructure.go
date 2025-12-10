@@ -3,9 +3,9 @@ package wire
 
 import (
 	"log"
-	"log/slog"
 
 	"github.com/google/wire"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	identitycli "github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/client/identity_cli"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/redis"
@@ -35,7 +35,7 @@ func ProvideConfig() *config.Configuration {
 
 // ProvideLogger 提供日志服务
 // 根据配置创建结构化日志实例
-func ProvideLogger(cfg *config.Configuration) *slog.Logger {
+func ProvideLogger(cfg *config.Configuration) *hertzZerolog.Logger {
 	logger, err := config.CreateLogger(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create logger: %v", err)
@@ -46,14 +46,14 @@ func ProvideLogger(cfg *config.Configuration) *slog.Logger {
 
 // ProvideIdentityClient 提供身份服务客户端
 // 创建与身份认证RPC服务的客户端连接
-func ProvideIdentityClient(logger *slog.Logger) identitycli.IdentityClient {
+func ProvideIdentityClient(logger *hertzZerolog.Logger) identitycli.IdentityClient {
 	client, err := identitycli.NewIdentityClient()
 	if err != nil {
-		logger.Error("Failed to create identity client", "error", err)
+		logger.Errorf("Failed to create identity client: %v", err)
 		panic(err)
 	}
 
-	logger.Info("Identity client created successfully")
+	logger.Infof("Identity client created successfully")
 
 	return client
 }
@@ -84,6 +84,6 @@ func ProvideRedisClient(cfg *config.RedisConfig) (*redis.Client, error) {
 
 // ProvideTokenCache 提供Token缓存服务
 // 创建Token缓存服务实例
-func ProvideTokenCache(client *redis.Client, logger *slog.Logger) redis.TokenCacheService {
+func ProvideTokenCache(client *redis.Client, logger *hertzZerolog.Logger) redis.TokenCacheService {
 	return redis.NewTokenCache(client, logger)
 }

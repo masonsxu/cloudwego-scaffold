@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	identityHandler "github.com/masonsxu/cloudwego-scaffold/gateway/biz/handler/identity"
 	permissionHandler "github.com/masonsxu/cloudwego-scaffold/gateway/biz/handler/permission"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware"
@@ -20,6 +21,10 @@ var _ app.HandlerFunc
 func main() {
 	// init config
 	config := wire.ProvideConfig()
+
+	// init logger and set to hlog
+	logger := wire.InitializeLogger()
+	hlog.SetLogger(logger)
 
 	// init service
 	services, err := wire.InitializeService()

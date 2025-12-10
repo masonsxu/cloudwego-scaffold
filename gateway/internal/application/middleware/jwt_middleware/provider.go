@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/hertz-contrib/jwt"
@@ -83,7 +83,7 @@ func JWTMiddlewareProvider(
 	authService authservice.AuthService,
 	jwtConfig *config.JWTConfig,
 	tokenCache TokenCacheService,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) (JWTMiddlewareService, error) {
 	// 验证配置
 	if err := validateJWTConfig(jwtConfig); err != nil {

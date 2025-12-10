@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"runtime"
 	"time"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/context/auth_context"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
@@ -16,16 +16,17 @@ import (
 // ErrorHandlerMiddlewareImpl 错误处理中间件实现
 type ErrorHandlerMiddlewareImpl struct {
 	config *config.ErrorHandlerConfig
-	logger *slog.Logger
+	logger *hertzZerolog.Logger
 }
 
 // NewErrorHandlerMiddleware 创建新的错误处理中间件实例
 func NewErrorHandlerMiddleware(
 	config *config.ErrorHandlerConfig,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) ErrorHandlerMiddlewareService {
 	if logger == nil {
-		logger = slog.Default()
+		// 如果 logger 为 nil，创建一个默认的 logger
+		logger = hertzZerolog.New()
 	}
 
 	return &ErrorHandlerMiddlewareImpl{
@@ -64,8 +65,8 @@ func (ehm *ErrorHandlerMiddlewareImpl) MiddlewareFunc() app.HandlerFunc {
 		c.Next(ctx)
 
 		if c.Response.StatusCode() == 500 && len(c.Response.Body()) == 0 {
-			ehm.logger.Warn("Casbin permission denied",
-				"method", string(c.Method()), "path", string(c.Request.Path()))
+			ehm.logger.Warnf("Casbin permission denied: method=%s, path=%s",
+				string(c.Method()), string(c.Request.Path()))
 			c.SetStatusCode(403)
 			c.JSON(403, map[string]string{"msg": "权限不足"})
 
@@ -108,14 +109,8 @@ func (ehm *ErrorHandlerMiddlewareImpl) handlePanicError(
 	stackTrace := string(buf[:n])
 
 	// 记录详细的panic日志
-	ehm.logger.Error("Panic recovered in error handler",
-		"panic", r,
-		"path", string(c.Request.Path()),
-		"method", string(c.Method()),
-		"user_agent", string(c.UserAgent()),
-		"remote_addr", c.RemoteAddr(),
-		"stack_trace", stackTrace,
-	)
+	ehm.logger.Errorf("Panic recovered in error handler: panic=%v, path=%s, method=%s, user_agent=%s, remote_addr=%s, stack_trace=%s",
+		r, string(c.Request.Path()), string(c.Method()), string(c.UserAgent()), c.RemoteAddr(), stackTrace)
 
 	// 构建错误响应
 	bizErr := errors.ErrInternal
@@ -134,33 +129,25 @@ func (ehm *ErrorHandlerMiddlewareImpl) handleHTTPStatusError(
 	statusCode int,
 ) {
 	// 记录用户信息（如果有的话）
-	logFields := []any{
-		"status_code", statusCode,
-		"path", string(c.Request.Path()),
-		"method", string(c.Method()),
-	}
+	logMsg := fmt.Sprintf("HTTP status error: status_code=%d, path=%s, method=%s",
+		statusCode, string(c.Request.Path()), string(c.Method()))
 
 	// 如果有用户上下文，记录用户信息
 	if userID, ok := auth_context.GetCurrentUserProfileID(c); ok && userID != "" {
-		logFields = append(logFields, "user_id", userID)
+		logMsg += fmt.Sprintf(", user_id=%s", userID)
 	}
 
 	if orgID, ok := auth_context.GetCurrentOrganizationID(c); ok && orgID != "" {
-		logFields = append(logFields, "org_id", orgID)
+		logMsg += fmt.Sprintf(", org_id=%s", orgID)
 	}
 
-	ehm.logger.Warn("HTTP status error", logFields...)
+	ehm.logger.Warnf(logMsg)
 
 	// 如果启用了详细错误信息，可以在这里添加更多上下文
 	if ehm.config.EnableDetailedErrors {
 		// 可以在这里添加更详细的错误信息处理
-		ehm.logger.Debug(
-			"Detailed error context",
-			"remote_addr",
-			c.RemoteAddr(),
-			"user_agent",
-			string(c.UserAgent()),
-		)
+		ehm.logger.Debugf("Detailed error context: remote_addr=%s, user_agent=%s",
+			c.RemoteAddr(), string(c.UserAgent()))
 	}
 
 	errors.HandleHTTPStatusError(c, statusCode)
@@ -171,22 +158,18 @@ func (ehm *ErrorHandlerMiddlewareImpl) logRequestInfo(ctx context.Context, c *ap
 	UserID, hasUserID := auth_context.GetCurrentUserProfileID(c)
 	orgID, hasOrg := auth_context.GetCurrentOrganizationID(c)
 
-	logFields := []any{
-		"method", string(c.Method()),
-		"path", string(c.Request.Path()),
-		"query", string(c.Request.QueryString()),
-		"remote_addr", c.RemoteAddr(),
-	}
+	logMsg := fmt.Sprintf("Request started: method=%s, path=%s, query=%s, remote_addr=%s",
+		string(c.Method()), string(c.Request.Path()), string(c.Request.QueryString()), c.RemoteAddr())
 
 	if hasUserID && UserID != "" {
-		logFields = append(logFields, "user_id", UserID)
+		logMsg += fmt.Sprintf(", user_id=%s", UserID)
 	}
 
 	if hasOrg && orgID != "" {
-		logFields = append(logFields, "org_id", orgID)
+		logMsg += fmt.Sprintf(", org_id=%s", orgID)
 	}
 
-	ehm.logger.Info("Request started", logFields...)
+	ehm.logger.Infof(logMsg)
 }
 
 // logResponseInfo 记录响应信息
@@ -198,17 +181,12 @@ func (ehm *ErrorHandlerMiddlewareImpl) logResponseInfo(
 	duration := time.Since(startTime)
 	statusCode := c.Response.StatusCode()
 
-	logFields := []any{
-		"method", string(c.Method()),
-		"path", string(c.Request.Path()),
-		"status_code", statusCode,
-		"duration_ms", duration.Milliseconds(),
-		"response_size", len(c.Response.Body()),
-	}
+	logMsg := fmt.Sprintf("Request completed: method=%s, path=%s, status_code=%d, duration_ms=%d, response_size=%d",
+		string(c.Method()), string(c.Request.Path()), statusCode, duration.Milliseconds(), len(c.Response.Body()))
 
 	if userID, ok := auth_context.GetCurrentUserProfileID(c); ok && userID != "" {
-		logFields = append(logFields, "user_id", userID)
+		logMsg += fmt.Sprintf(", user_id=%s", userID)
 	}
 
-	ehm.logger.Info("Request completed", logFields...)
+	ehm.logger.Infof(logMsg)
 }

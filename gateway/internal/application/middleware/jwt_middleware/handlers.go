@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 	"time"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/jwt"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
@@ -127,7 +127,7 @@ func customHTTPStatusMessageFunc(
 	e error,
 	ctx context.Context,
 	c *app.RequestContext,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) string {
 	// 检查是否已经有响应被写入（避免重复写入）
 	if c.Response.IsBodyStream() || len(c.Response.Body()) > 0 {
@@ -142,27 +142,27 @@ func customHTTPStatusMessageFunc(
 		// 认证失败（用户名密码错误等）
 		apiError = errors.ErrInvalidCredentials
 
-		logger.DebugContext(ctx, "Authentication failed", "error", e)
+		logger.Debugf("Authentication failed: error=%v", e)
 	case jwt.ErrExpiredToken:
 		// Token过期
 		apiError = errors.ErrJWTTokenExpired
 
-		logger.DebugContext(ctx, "Token expired", "error", e)
+		logger.Debugf("Token expired: error=%v", e)
 	case jwt.ErrFailedTokenCreation:
 		// Token创建失败
 		apiError = errors.ErrJWTCreationFail
 
-		logger.WarnContext(ctx, "Token creation failed", "error", e)
+		logger.Warnf("Token creation failed: error=%v", e)
 	default:
 		// 检查是否是项目内部的业务错误
 		if bizErr, ok := e.(errors.APIError); ok {
 			apiError = bizErr
-			logger.DebugContext(ctx, "Business error", "error", bizErr)
+			logger.Debugf("Business error: error=%v", bizErr)
 		} else {
 			// 其他未知错误，默认为JWT验证失败
 			apiError = errors.ErrJWTValidationFail
 
-			logger.WarnContext(ctx, "Unknown JWT error", "error", e)
+			logger.Warnf("Unknown JWT error: error=%v", e)
 		}
 	}
 

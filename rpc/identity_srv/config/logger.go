@@ -6,27 +6,26 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudwego/hertz/pkg/common/hlog"
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
+	"github.com/rs/zerolog"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // CreateLogger 根据配置创建zerolog.Logger实例
 // 支持标准输出和文件输出，文件输出时自动启用日志轮转
-func CreateLogger(cfg *Configuration) (*hertzZerolog.Logger, error) {
+func CreateLogger(cfg *Config) (*zerolog.Logger, error) {
 	// 解析日志级别
-	var level hlog.Level
+	var level zerolog.Level
 	switch cfg.Log.Level {
 	case "debug":
-		level = hlog.LevelDebug
+		level = zerolog.DebugLevel
 	case "info":
-		level = hlog.LevelInfo
+		level = zerolog.InfoLevel
 	case "warn":
-		level = hlog.LevelWarn
+		level = zerolog.WarnLevel
 	case "error":
-		level = hlog.LevelError
+		level = zerolog.ErrorLevel
 	default:
-		level = hlog.LevelInfo
+		level = zerolog.InfoLevel
 	}
 
 	// 根据输出类型选择输出目标
@@ -45,29 +44,28 @@ func CreateLogger(cfg *Configuration) (*hertzZerolog.Logger, error) {
 		outputWriter = os.Stdout
 	}
 
-	// 创建 zerolog logger 选项
-	opts := []hertzZerolog.Opt{
-		hertzZerolog.WithLevel(level),
-		hertzZerolog.WithOutput(outputWriter),
-		hertzZerolog.WithTimestamp(),
-	}
+	// 创建 zerolog logger
+	logger := zerolog.New(outputWriter).With().
+		Timestamp().
+		Logger().
+		Level(level)
 
-	// 如果配置了 JSON 格式，zerolog 默认就是 JSON，否则使用格式化输出
-	// zerolog 默认是 JSON 格式，如果需要文本格式，可以通过自定义格式实现
-	// 这里我们保持 JSON 格式，因为这是 zerolog 的优势
+	// 记录日志初始化信息
+	logger.Info().
+		Str("level", cfg.Log.Level).
+		Str("format", cfg.Log.Format).
+		Str("output", cfg.Log.Output).
+		Str("file_path", cfg.Log.FilePath).
+		Int("max_size_mb", cfg.Log.MaxSize).
+		Int("max_age_days", cfg.Log.MaxAge).
+		Int("max_backups", cfg.Log.MaxBackups).
+		Msg("Logger initialized")
 
-	// 创建 logger
-	logger := hertzZerolog.New(opts...)
-
-	// 记录日志初始化信息（使用 hlog 接口）
-	logger.Infof("Logger initialized: level=%s, format=%s, output=%s, file_path=%s, max_size_mb=%d, max_age_days=%d, max_backups=%d",
-		cfg.Log.Level, cfg.Log.Format, cfg.Log.Output, cfg.Log.FilePath, cfg.Log.MaxSize, cfg.Log.MaxAge, cfg.Log.MaxBackups)
-
-	return logger, nil
+	return &logger, nil
 }
 
 // createLogWriter 创建支持轮转的日志writer
-func createLogWriter(cfg *Configuration) (*lumberjack.Logger, error) {
+func createLogWriter(cfg *Config) (*lumberjack.Logger, error) {
 	// 确保日志目录存在
 	logDir := filepath.Dir(cfg.Log.FilePath)
 	if err := os.MkdirAll(logDir, 0o755); err != nil {

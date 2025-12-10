@@ -2,8 +2,7 @@
 package wire
 
 import (
-	"log/slog"
-
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/google/wire"
 	corsmdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/cors_middleware"
 	errormw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/error_middleware"
@@ -53,10 +52,10 @@ func NewMiddlewareContainer(
 
 // ProvideTraceMiddleware 提供追踪中间件
 // 自动生成和传播请求追踪信息
-func ProvideTraceMiddleware(logger *slog.Logger) tracemdw.TraceMiddlewareService {
+func ProvideTraceMiddleware(logger *hertzZerolog.Logger) tracemdw.TraceMiddlewareService {
 	middleware := tracemdw.NewTraceMiddleware()
 
-	logger.Info("Trace middleware created successfully")
+	logger.Infof("Trace middleware created successfully")
 
 	return middleware
 }
@@ -67,15 +66,15 @@ func ProvideJWTMiddleware(
 	identityService identityService.Service,
 	jwtConfig *config.JWTConfig,
 	tokenCache redis.TokenCacheService,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) jwtmdw.JWTMiddlewareService {
 	middleware, err := jwtmdw.JWTMiddlewareProvider(identityService, jwtConfig, tokenCache, logger)
 	if err != nil {
-		logger.Error("Failed to create JWT middleware", "error", err)
+		logger.Errorf("Failed to create JWT middleware: %v", err)
 		panic(err)
 	}
 
-	logger.Info("JWT middleware created successfully")
+	logger.Infof("JWT middleware created successfully")
 
 	return middleware
 }
@@ -84,10 +83,10 @@ func ProvideJWTMiddleware(
 // 处理跨域资源共享(CORS)配置
 func ProvideCORSMiddleware(
 	cfg *config.Configuration,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) corsmdw.CORSMiddlewareService {
 	middleware := corsmdw.NewCORSMiddleware(&cfg.Middleware.CORS, logger)
-	logger.Info("CORS middleware created successfully")
+	logger.Infof("CORS middleware created successfully")
 
 	return middleware
 }
@@ -96,10 +95,10 @@ func ProvideCORSMiddleware(
 // 统一处理请求中的错误响应
 func ProvideErrorHandlerMiddleware(
 	cfg *config.Configuration,
-	logger *slog.Logger,
+	logger *hertzZerolog.Logger,
 ) errormw.ErrorHandlerMiddlewareService {
 	middleware := errormw.NewErrorHandlerMiddleware(&cfg.Middleware.ErrorHandler, logger)
-	logger.Info("Error Handler middleware created successfully")
+	logger.Infof("Error Handler middleware created successfully")
 
 	return middleware
 }

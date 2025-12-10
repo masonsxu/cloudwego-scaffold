@@ -3,11 +3,11 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/bytedance/gopkg/cloud/metainfo"
 	"github.com/cloudwego/kitex/pkg/endpoint"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 )
 
 // MetaInfoMiddleware RPC服务端追踪中间件
@@ -21,13 +21,14 @@ import (
 // - 确保每个请求都有完整的追踪 ID（自动生成缺失的）
 // - 聚焦核心功能（只处理 request_id 和 trace_id）
 type MetaInfoMiddleware struct {
-	logger *slog.Logger
+	logger *zerolog.Logger
 }
 
 // NewMetaInfoMiddleware 创建新的MetaInfo中间件实例
-func NewMetaInfoMiddleware(logger *slog.Logger) *MetaInfoMiddleware {
+func NewMetaInfoMiddleware(logger *zerolog.Logger) *MetaInfoMiddleware {
 	if logger == nil {
-		logger = slog.Default()
+		defaultLogger := zerolog.Nop()
+		logger = &defaultLogger
 	}
 
 	return &MetaInfoMiddleware{
@@ -82,9 +83,10 @@ func (m *MetaInfoMiddleware) ensureTraceIDs(ctx context.Context) context.Context
 	// 只有需要时才注入（性能优化）
 	if needsRequestID {
 		ctx = metainfo.WithPersistentValue(ctx, "request_id", requestID)
-		m.logger.Warn("Generated missing request_id",
-			"request_id", requestID,
-			"service", "identity_srv")
+		m.logger.Warn().
+			Str("request_id", requestID).
+			Str("service", "identity_srv").
+			Msg("Generated missing request_id")
 	}
 
 	if needsTraceID {
@@ -98,9 +100,12 @@ func (m *MetaInfoMiddleware) ensureTraceIDs(ctx context.Context) context.Context
 func (m *MetaInfoMiddleware) logTraceInfo(ctx context.Context) {
 	attrs := LoggingAttrs(ctx)
 	if len(attrs) > 0 {
-		m.logger.Info("RPC request received",
-			slog.String("middleware", "trace"),
-			slog.Any("trace", attrs))
+		event := m.logger.Info().Str("middleware", "trace")
+		for k, v := range attrs {
+			event = event.Interface(k, v)
+		}
+
+		event.Msg("RPC request received")
 	}
 }
 
@@ -127,16 +132,16 @@ func GetTraceID(ctx context.Context) string {
 }
 
 // LoggingAttrs 返回用于结构化日志的属性
-// 使用 slog.Attr 提供更好的性能和类型安全
-func LoggingAttrs(ctx context.Context) []slog.Attr {
-	var attrs []slog.Attr
+// 返回 map[string]interface{} 用于 zerolog
+func LoggingAttrs(ctx context.Context) map[string]interface{} {
+	attrs := make(map[string]interface{})
 
 	if requestID := GetRequestID(ctx); requestID != "" {
-		attrs = append(attrs, slog.String("request_id", requestID))
+		attrs["request_id"] = requestID
 	}
 
 	if traceID := GetTraceID(ctx); traceID != "" {
-		attrs = append(attrs, slog.String("trace_id", traceID))
+		attrs["trace_id"] = traceID
 	}
 
 	return attrs

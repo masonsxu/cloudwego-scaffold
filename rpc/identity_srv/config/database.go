@@ -3,21 +3,21 @@ package config
 import (
 	"fmt"
 	"log"
-	"log/slog"
 
 	"github.com/masonsxu/cloudwego-scaffold/rpc/identity-srv/models"
+	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 // InitDB 初始化数据库连接，提供给wire使用的函数
-func InitDB(cfg *Config, loggerSvc *slog.Logger) (*gorm.DB, error) {
+func InitDB(cfg *Config, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
 	return NewDB(&cfg.Database, loggerSvc)
 }
 
 // NewDB initializes and returns a new GORM database instance.
-func NewDB(cfg *DatabaseConfig, loggerSvc *slog.Logger) (*gorm.DB, error) {
+func NewDB(cfg *DatabaseConfig, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
 	var dialector gorm.Dialector
 
 	switch cfg.Driver {
@@ -71,7 +71,7 @@ func NewDB(cfg *DatabaseConfig, loggerSvc *slog.Logger) (*gorm.DB, error) {
 	}
 	// 测试连接
 	if err := sqlDB.Ping(); err != nil {
-		loggerSvc.Error("Failed to ping database", "error", err)
+		loggerSvc.Error().Err(err).Msg("Failed to ping database")
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
@@ -82,18 +82,18 @@ func NewDB(cfg *DatabaseConfig, loggerSvc *slog.Logger) (*gorm.DB, error) {
 	// 执行种子数据初始化（幂等）
 	if err := SeedDatabase(db, loggerSvc, cfg); err != nil {
 		// Seeder 失败只记录警告，不阻止服务启动
-		loggerSvc.Warn("⚠️  种子数据初始化失败: %v", "error", err)
+		loggerSvc.Warn().Err(err).Msg("⚠️  种子数据初始化失败")
 	}
 
-	loggerSvc.Info("Database connected successfully",
-		"host", cfg.Host,
-		"port", cfg.Port,
-		"database", cfg.DBName,
-		"max_idle_conns", cfg.MaxIdleConns,
-		"max_open_conns", cfg.MaxOpenConns,
-		"max_conn_lifetime", cfg.ConnMaxLifetime,
-		"max_conn_idle_time", cfg.ConnMaxIdleTime,
-	)
+	loggerSvc.Info().
+		Str("host", cfg.Host).
+		Int("port", cfg.Port).
+		Str("database", cfg.DBName).
+		Int("max_idle_conns", cfg.MaxIdleConns).
+		Int("max_open_conns", cfg.MaxOpenConns).
+		Dur("max_conn_lifetime", cfg.ConnMaxLifetime).
+		Dur("max_conn_idle_time", cfg.ConnMaxIdleTime).
+		Msg("Database connected successfully")
 
 	return db, nil
 }
