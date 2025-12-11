@@ -1,4 +1,4 @@
-package response_middleware
+package middleware
 
 import "github.com/cloudwego/hertz/pkg/app"
 
