@@ -13,11 +13,11 @@ import (
 
 // InitDB 初始化数据库连接，提供给wire使用的函数
 func InitDB(cfg *Config, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
-	return NewDB(&cfg.Database, loggerSvc)
+	return NewDB(&cfg.Database, &cfg.Server, loggerSvc)
 }
 
 // NewDB initializes and returns a new GORM database instance.
-func NewDB(cfg *DatabaseConfig, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
+func NewDB(cfg *DatabaseConfig, serverCfg *ServerConfig, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
 	var dialector gorm.Dialector
 
 	switch cfg.Driver {
@@ -38,8 +38,16 @@ func NewDB(cfg *DatabaseConfig, loggerSvc *zerolog.Logger) (*gorm.DB, error) {
 		return nil, fmt.Errorf("不支持的数据库驱动: %s", cfg.Driver)
 	}
 
+	// 根据 Debug 模式动态设置 GORM 日志级别
+	var gormLogLevel logger.LogLevel
+	if serverCfg.Debug {
+		gormLogLevel = logger.Info // 调试模式：记录所有 SQL
+	} else {
+		gormLogLevel = logger.Error // 生产模式：仅记录错误
+	}
+
 	config := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(gormLogLevel),
 	}
 
 	db, err := gorm.Open(dialector, config)

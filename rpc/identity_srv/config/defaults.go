@@ -12,8 +12,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("server.name", "identity-service")
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("server.port", 8891)
-	v.SetDefault("server.version", "1.0.0")
-	v.SetDefault("server.environment", "development")
+	v.SetDefault("server.debug", false) // 默认关闭，开发环境通过 .env 设置为 true
 
 	// 健康检查配置默认值
 	v.SetDefault("health_check.port", 10000)

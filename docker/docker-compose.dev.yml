@@ -60,8 +60,7 @@ services:
     restart: "no"
     # 开发环境覆盖环境变量
     environment:
-      APP_ENVIRONMENT: development
-      APP_DEBUG: "true"
+      SERVER_DEBUG: "true"
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       ERROR_HANDLER_ENABLE_DETAILED_ERRORS: "true"
 
@@ -76,8 +75,7 @@ services:
     restart: "no"
     # 开发环境覆盖环境变量
     environment:
-      APP_ENVIRONMENT: development
-      APP_DEBUG: "true"
+      SERVER_DEBUG: "true"
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       ERROR_HANDLER_ENABLE_DETAILED_ERRORS: "true"
       JWT_COOKIE_SECURE_COOKIE: "false"  # 开发环境可以使用 HTTP

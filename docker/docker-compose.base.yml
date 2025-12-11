@@ -128,13 +128,11 @@ services:
   identity_srv:
     container_name: identity-srv
     environment:
-      # 应用配置
-      APP_NAME: ${IDENTITY_APP_NAME:-identity-service}
-      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-development}
-      APP_DEBUG: ${APP_DEBUG:-true}
+      # 调试配置
+      SERVER_DEBUG: ${SERVER_DEBUG:-false}
 
       # 服务器配置
-      IDENTITY_SRV_NAME: ${IDENTITY_SRV_NAME:-identity-service}
+      SERVER_NAME: ${IDENTITY_SRV_NAME:-identity-service}
       USER_SRV_HOST: ${IDENTITY_SRV_HOST:-0.0.0.0}
       USER_SRV_PORT: ${IDENTITY_SRV_PORT:-8891}
 
@@ -197,10 +195,8 @@ services:
   api_gateway:
     container_name: api-gateway
     environment:
-      # 应用配置
-      APP_NAME: ${API_GATEWAY_APP_NAME:-api-gateway}
-      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-development}
-      APP_DEBUG: ${APP_DEBUG:-true}
+      # 调试配置
+      SERVER_DEBUG: ${SERVER_DEBUG:-false}
 
       # 服务器配置
       SERVER_NAME: ${API_GATEWAY_SERVER_NAME:-api-gateway}

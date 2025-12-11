@@ -40,6 +40,19 @@ func loadConfig() (*Configuration, error) {
 
 // postProcessConfig 配置后处理
 func postProcessConfig(config *Configuration) {
+	// 根据 SERVER_DEBUG 自动设置日志级别和错误详情开关
+	// 这允许在生产环境临时开启 DEBUG 模式来排查问题
+	if config.Server.Debug {
+		// 调试模式下，如果日志级别未设置或为 info，自动调整为 debug
+		if config.Log.Level == "" || config.Log.Level == "info" {
+			config.Log.Level = "debug"
+		}
+		// 调试模式下，默认启用详细错误信息
+		if !config.Middleware.ErrorHandler.EnableDetailedErrors {
+			config.Middleware.ErrorHandler.EnableDetailedErrors = true
+		}
+	}
+
 	// 确保日志目录存在
 	if config.Log.Output == "file" && config.Log.FilePath != "" {
 		if err := os.MkdirAll(config.Log.FilePath, 0o755); err != nil {

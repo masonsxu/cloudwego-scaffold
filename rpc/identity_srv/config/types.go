@@ -40,16 +40,15 @@ type DatabaseConfig struct {
 }
 
 // ServerConfig 服务器配置
-// 相关环境变量：SERVER_NAME, SERVER_HOST, SERVER_PORT, SERVER_ADDRESS, SERVER_VERSION, SERVER_ENVIRONMENT
+// 相关环境变量：SERVER_NAME, SERVER_HOST, SERVER_PORT, SERVER_ADDRESS, SERVER_DEBUG
 // Address 可直接提供监听地址（如 ":8891" 或 "0.0.0.0:8891"），
 // 若未设置 Address，则由 Host + Port 组合生成。
 type ServerConfig struct {
-	Name        string `mapstructure:"name"`        // 服务名称（用于服务发现）
-	Host        string `mapstructure:"host"`        // 服务监听主机
-	Port        int    `mapstructure:"port"`        // 服务监听端口
-	Address     string `mapstructure:"address"`     // 兼容旧配置，可直接提供完整地址
-	Version     string `mapstructure:"version"`     // 服务版本号
-	Environment string `mapstructure:"environment"` // 运行环境（development/production）
+	Name    string `mapstructure:"name"`    // 服务名称（用于服务发现、RPC调用标识）
+	Host    string `mapstructure:"host"`    // 服务监听主机
+	Port    int    `mapstructure:"port"`    // 服务监听端口
+	Address string `mapstructure:"address"` // 兼容旧配置，可直接提供完整地址
+	Debug   bool   `mapstructure:"debug"`   // 调试模式开关（控制日志详细度、GORM SQL日志等）
 }
 
 // HealthCheckConfig 健康检查配置

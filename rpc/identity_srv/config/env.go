@@ -111,8 +111,9 @@ func mapServerEnvVars(v *viper.Viper) {
 
 		return 8891
 	})
-	mapToViper(v, "SERVER_VERSION", "server.version", nil)
-	mapToViper(v, "SERVER_ENVIRONMENT", "server.environment", nil)
+	mapToViper(v, "SERVER_DEBUG", "server.debug", func(value string) interface{} {
+		return value == "true"
+	})
 }
 
 // mapHealthCheckEnvVars 映射健康检查相关环境变量

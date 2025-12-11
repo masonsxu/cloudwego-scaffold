@@ -17,7 +17,14 @@ func CreateLogger(cfg *Configuration) (*hertzZerolog.Logger, error) {
 	// 解析日志级别
 	var level hlog.Level
 
-	switch cfg.Log.Level {
+	logLevel := cfg.Log.Level
+
+	// 如果开启了调试模式且未显式设置日志级别，自动使用 debug 级别
+	if cfg.Server.Debug && logLevel == "" {
+		logLevel = "debug"
+	}
+
+	switch logLevel {
 	case "debug":
 		level = hlog.LevelDebug
 	case "info":

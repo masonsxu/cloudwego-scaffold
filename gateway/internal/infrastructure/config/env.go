@@ -98,8 +98,9 @@ func mapServerEnvVars(v *viper.Viper) {
 
 		return 8888
 	})
-	mapToViper(v, "SERVER_VERSION", "server.version", nil)
-	mapToViper(v, "SERVER_ENVIRONMENT", "server.environment", nil)
+	mapToViper(v, "SERVER_DEBUG", "server.debug", func(value string) interface{} {
+		return value == "true"
+	})
 	mapToViper(v, "SERVER_READ_TIMEOUT", "server.read_timeout", func(value string) interface{} {
 		return parseDurationWithDefault(value, 30*time.Second)
 	})

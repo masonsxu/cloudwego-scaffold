@@ -18,14 +18,13 @@ type Configuration struct {
 }
 
 // ServerConfig 服务器配置
-// 相关环境变量：SERVER_NAME, SERVER_HOST, SERVER_PORT, SERVER_VERSION, SERVER_ENVIRONMENT,
+// 相关环境变量：SERVER_NAME, SERVER_HOST, SERVER_PORT, SERVER_DEBUG,
 // SERVER_READ_TIMEOUT, SERVER_WRITE_TIMEOUT, SERVER_IDLE_TIMEOUT
 type ServerConfig struct {
-	Name         string        `mapstructure:"name"`        // 服务名称（用于服务发现）
-	Host         string        `mapstructure:"host"`        // 服务监听主机
-	Port         int           `mapstructure:"port"`        // 服务监听端口
-	Version      string        `mapstructure:"version"`     // 服务版本号
-	Environment  string        `mapstructure:"environment"` // 运行环境（development/production）
+	Name         string        `mapstructure:"name"`          // 服务名称（用于服务发现、RPC调用标识）
+	Host         string        `mapstructure:"host"`          // 服务监听主机
+	Port         int           `mapstructure:"port"`          // 服务监听端口
+	Debug        bool          `mapstructure:"debug"`         // 调试模式开关（控制日志详细度、错误堆栈、SQL日志等）
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
 	IdleTimeout  time.Duration `mapstructure:"idle_timeout"`

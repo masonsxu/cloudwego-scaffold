@@ -8,16 +8,11 @@ import (
 
 // setDefaults 设置默认配置值
 func setDefaults(v *viper.Viper) {
-	// 应用默认值
-	v.SetDefault("app.name", "api-gateway")
-	v.SetDefault("app.version", "1.0.0")
-	v.SetDefault("app.environment", "development")
-	v.SetDefault("app.debug", true)
-
 	// 服务器默认值
 	v.SetDefault("server.name", "api-gateway")
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("server.port", "8080")
+	v.SetDefault("server.debug", false) // 默认关闭，开发环境通过 .env 设置为 true
 	v.SetDefault("server.read_timeout", 30*time.Second)
 	v.SetDefault("server.write_timeout", 30*time.Second)
 	v.SetDefault("server.idle_timeout", 120*time.Second)
