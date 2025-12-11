@@ -49,6 +49,7 @@ func main() {
 		middlewares.CORSMiddleware,
 		middlewares.ErrorHandlerMiddleware,
 		middlewares.JWTMiddleware,
+		middlewares.ResponseHeaderMiddleware,
 	)
 
 	// 设置全局 Casbin 中间件实例，供路由中间件使用

@@ -79,7 +79,8 @@ func InitializeMiddleware() (*MiddlewareContainer, error) {
 	}
 	tokenCacheService := ProvideTokenCache(client, logger)
 	jwtMiddlewareService := ProvideJWTMiddleware(service, jwtConfig, tokenCacheService, logger)
-	middlewareContainer := NewMiddlewareContainer(traceMiddlewareService, corsMiddlewareService, errorHandlerMiddlewareService, jwtMiddlewareService)
+	responseHeaderMiddlewareService := ProvideResponseHeaderMiddleware()
+	middlewareContainer := NewMiddlewareContainer(traceMiddlewareService, corsMiddlewareService, errorHandlerMiddlewareService, jwtMiddlewareService, responseHeaderMiddlewareService)
 	return middlewareContainer, nil
 }
 

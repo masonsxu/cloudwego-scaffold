@@ -40,9 +40,8 @@ func (m *JWTMiddlewareImpl) MiddlewareFunc() app.HandlerFunc {
 				m.logger.Warnf("Access denied: token has been revoked")
 				c.JSON(http.StatusUnauthorized, &http_base.OperationStatusResponseDTO{
 					BaseResp: &http_base.BaseResponseDTO{
-						Code:      errors.ErrJWTTokenExpired.Code(),
-						Message:   errors.ErrJWTTokenExpired.Message(),
-						Timestamp: time.Now().UnixMilli(),
+						Code:    errors.ErrJWTTokenExpired.Code(),
+						Message: errors.ErrJWTTokenExpired.Message(),
 					},
 				})
 				c.Abort()

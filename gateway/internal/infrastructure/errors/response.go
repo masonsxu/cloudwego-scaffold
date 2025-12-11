@@ -4,7 +4,6 @@ package errors
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/requestid"
@@ -52,16 +51,15 @@ var httpStatusMap = map[int32]int{
 // AbortWithError 中断请求并返回错误响应
 // 与成功响应保持一致的结构，便于前端统一处理
 // RequestID 会通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
+// Date 响应头由 ResponseHeaderMiddleware 自动添加
 func AbortWithError(c *app.RequestContext, err APIError) {
 	httpStatus := GetHTTPStatus(err.Code())
-	timestamp := time.Now().UnixMilli()
 
 	// 使用 OperationStatusResponseDTO 结构
 	response := &http_base.OperationStatusResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
-			Code:      err.Code(),
-			Message:   err.Message(),
-			Timestamp: timestamp,
+			Code:    err.Code(),
+			Message: err.Message(),
 		},
 	}
 
@@ -72,16 +70,15 @@ func AbortWithError(c *app.RequestContext, err APIError) {
 // AbortWithErrorMessage 中断请求并返回自定义错误消息
 // 与成功响应保持一致的结构，便于前端统一处理
 // RequestID 会通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
+// Date 响应头由 ResponseHeaderMiddleware 自动添加
 func AbortWithErrorMessage(c *app.RequestContext, err APIError, message string) {
 	httpStatus := GetHTTPStatus(err.Code())
-	timestamp := time.Now().UnixMilli()
 
 	// 使用 OperationStatusResponseDTO 结构
 	response := &http_base.OperationStatusResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
-			Code:      err.Code(),
-			Message:   message,
-			Timestamp: timestamp,
+			Code:    err.Code(),
+			Message: message,
 		},
 	}
 
@@ -110,19 +107,5 @@ func GetHTTPStatus(code int32) int {
 	default:
 		// 系统级错误默认返回 500
 		return http.StatusInternalServerError
-	}
-}
-
-// FillBaseResp 填充BaseResponseDTO中的时间戳字段
-// 此函数应在handler层返回响应前调用，用于填充service层创建的空的时间戳
-// 注意：RequestID 已从响应体中移除，改为通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
-func FillBaseResp(c *app.RequestContext, baseResp *http_base.BaseResponseDTO) {
-	if baseResp == nil {
-		return
-	}
-
-	// 只填充时间戳（如果为空）
-	if baseResp.Timestamp == 0 {
-		baseResp.Timestamp = time.Now().UnixMilli()
 	}
 }

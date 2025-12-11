@@ -43,12 +43,6 @@ func loginResponseHandler(
 	if userVal, exists := c.Get(LoginUserContextKey); exists {
 		if loginResp, ok := userVal.(*identity.LoginResponseDTO); ok {
 			loginResp.TokenInfo = tokenInfo
-
-			// 填充BaseResp的追踪字段
-			if loginResp.BaseResp != nil {
-				errors.FillBaseResp(c, loginResp.BaseResp)
-			}
-
 			c.JSON(http.StatusOK, loginResp)
 
 			return
@@ -57,9 +51,8 @@ func loginResponseHandler(
 
 	// 如果没有找到登录响应,返回空的成功响应
 	c.JSON(http.StatusOK, &http_base.BaseResponseDTO{
-		Code:      errors.ErrSuccess.Code(),
-		Message:   errors.ErrSuccess.Message(),
-		Timestamp: time.Now().UnixMilli(),
+		Code:    errors.ErrSuccess.Code(),
+		Message: errors.ErrSuccess.Message(),
 	})
 }
 
@@ -72,9 +65,8 @@ func logoutResponseHandler(
 	// 构造统一的登出响应
 	response := &http_base.OperationStatusResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
-			Code:      errors.ErrSuccess.Code(),
-			Message:   errors.ErrSuccess.Message(),
-			Timestamp: time.Now().UnixMilli(),
+			Code:    errors.ErrSuccess.Code(),
+			Message: errors.ErrSuccess.Message(),
 		},
 	}
 
@@ -95,9 +87,8 @@ func refreshResponseHandler(
 	// 构造刷新Token响应
 	response := &identity.RefreshTokenResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
-			Code:      errors.ErrSuccess.Code(),
-			Message:   errors.ErrSuccess.Message(),
-			Timestamp: time.Now().UnixMilli(),
+			Code:    errors.ErrSuccess.Code(),
+			Message: errors.ErrSuccess.Message(),
 		},
 		TokenInfo: tokenInfo,
 	}
@@ -168,13 +159,11 @@ func customHTTPStatusMessageFunc(
 
 	// 生成标准化的错误响应
 	httpStatus := errors.GetHTTPStatus(apiError.Code())
-	timestamp := time.Now().UnixMilli()
 
 	response := &http_base.OperationStatusResponseDTO{
 		BaseResp: &http_base.BaseResponseDTO{
-			Code:      apiError.Code(),
-			Message:   apiError.Message(),
-			Timestamp: timestamp,
+			Code:    apiError.Code(),
+			Message: apiError.Message(),
 		},
 	}
 

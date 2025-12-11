@@ -41,10 +41,8 @@ struct TokenInfoDTO {
  * 针对 REST API 优化的响应结构
  */
 struct BaseResponseDTO {
-    1: required i32 code = 0 (go.tag = "json:\"code\""),                               // 错误码，0表示成功
-    2: required string message = "success" (go.tag = "json:\"message\""),              // 人类可读的提示信息
-    3: required core.TimestampMS timestamp (go.tag = "json:\"timestamp\""),            // 服务器响应时间戳 (ms)
-    4: optional map<string, string> metadata (go.tag = "json:\"metadata,omitempty\""), // 其他元数据
+    1: required i32 code = 0 (go.tag = "json:\"code\""),           // 错误码，0表示成功
+    2: required string message = "success" (go.tag = "json:\"message\""), // 人类可读的提示信息
 }
 
 /**

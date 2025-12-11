@@ -15,8 +15,10 @@ func NewResponseBuilder() *ResponseBuilder {
 }
 
 // BuildSuccessResponse 构建成功响应的基础部分
-// 注意：request_id 会通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
-// timestamp 会在 handler 层通过 errors.JSON() 自动填充
+// 注意：
+// - request_id 通过 HTTP Header (X-Request-ID) 传递，由 requestid 中间件自动处理
+// - timestamp 已从响应体移除，改用标准 HTTP Date 响应头
+// - Date 响应头由 ResponseHeaderMiddleware 自动添加
 func (rb *ResponseBuilder) BuildSuccessResponse() *http_base.BaseResponseDTO {
 	return &http_base.BaseResponseDTO{
 		Code:    errors.ErrSuccess.Code(),

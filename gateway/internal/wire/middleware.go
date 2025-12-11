@@ -7,6 +7,7 @@ import (
 	corsmdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/cors_middleware"
 	errormw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/error_middleware"
 	jwtmdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/jwt_middleware"
+	responsemw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/response_middleware"
 	tracemdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/trace_middleware"
 	identityService "github.com/masonsxu/cloudwego-scaffold/gateway/internal/domain/service/identity"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
@@ -19,6 +20,7 @@ var MiddlewareSet = wire.NewSet(
 	ProvideCORSMiddleware,
 	ProvideErrorHandlerMiddleware,
 	ProvideJWTMiddleware,
+	ProvideResponseHeaderMiddleware,
 	// ProvideCasbinMiddleware,
 	NewMiddlewareContainer,
 )
@@ -26,11 +28,12 @@ var MiddlewareSet = wire.NewSet(
 // MiddlewareContainer 中间件容器
 // 统一管理所有中间件实例
 type MiddlewareContainer struct {
-	TraceMiddleware        tracemdw.TraceMiddlewareService
-	CORSMiddleware         corsmdw.CORSMiddlewareService
-	ErrorHandlerMiddleware errormw.ErrorHandlerMiddlewareService
-	JWTMiddleware          jwtmdw.JWTMiddlewareService
-	// CasbinMiddleware       casbinmw.CasbinMiddleware
+	TraceMiddleware          tracemdw.TraceMiddlewareService
+	CORSMiddleware           corsmdw.CORSMiddlewareService
+	ErrorHandlerMiddleware   errormw.ErrorHandlerMiddlewareService
+	JWTMiddleware            jwtmdw.JWTMiddlewareService
+	ResponseHeaderMiddleware responsemw.ResponseHeaderMiddlewareService
+	// CasbinMiddleware         casbinmw.CasbinMiddleware
 }
 
 // NewMiddlewareContainer 创建中间件容器
@@ -39,14 +42,16 @@ func NewMiddlewareContainer(
 	corsMiddleware corsmdw.CORSMiddlewareService,
 	errorHandlerMiddleware errormw.ErrorHandlerMiddlewareService,
 	jwtMiddleware jwtmdw.JWTMiddlewareService,
+	responseHeaderMiddleware responsemw.ResponseHeaderMiddlewareService,
 	// casbinMiddleware casbinmw.CasbinMiddleware,
 ) *MiddlewareContainer {
 	return &MiddlewareContainer{
-		TraceMiddleware:        traceMiddleware,
-		CORSMiddleware:         corsMiddleware,
-		ErrorHandlerMiddleware: errorHandlerMiddleware,
-		JWTMiddleware:          jwtMiddleware,
-		// CasbinMiddleware:       casbinMiddleware,
+		TraceMiddleware:          traceMiddleware,
+		CORSMiddleware:           corsMiddleware,
+		ErrorHandlerMiddleware:   errorHandlerMiddleware,
+		JWTMiddleware:            jwtMiddleware,
+		ResponseHeaderMiddleware: responseHeaderMiddleware,
+		// CasbinMiddleware:         casbinMiddleware,
 	}
 }
 
@@ -101,6 +106,12 @@ func ProvideErrorHandlerMiddleware(
 	logger.Infof("Error Handler middleware created successfully")
 
 	return middleware
+}
+
+// ProvideResponseHeaderMiddleware 提供响应头中间件
+// 自动为所有响应添加标准 HTTP Date 响应头
+func ProvideResponseHeaderMiddleware() responsemw.ResponseHeaderMiddlewareService {
+	return responsemw.NewResponseHeaderMiddleware()
 }
 
 // ProvideCasbinMiddleware 提供Casbin权限中间件
