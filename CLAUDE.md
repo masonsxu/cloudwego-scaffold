@@ -604,23 +604,21 @@ LOGO_STORAGE_ALLOWED_FILE_TYPES=image/jpeg,image/png,image/gif,image/webp,image/
 
 | 配置项                     | 开发环境     | 生产环境                               |
 | -------------------------- | ------------ | -------------------------------------- |
-| `APP_DEBUG`                | `true`       | `false`                                |
+| `SERVER_DEBUG`             | `true`       | `false`（临时排障时可设为 `true`）     |
 | `LOG_LEVEL`                | `debug`      | `info` 或 `warn`                       |
 | `DB_PASSWORD`              | 弱密码可接受 | **必须使用强密码**                     |
 | `JWT_SIGNING_KEY`          | 简单字符串   | **必须使用强随机密钥（至少 32 字符）** |
 | `JWT_COOKIE_SECURE_COOKIE` | `false`      | `true`（需要 HTTPS）                   |
 | `DB_SSLMODE`               | `disable`    | `require` 或 `verify-full`             |
-| `GORM Debug 模式`          | 启用（自动） | 禁用                                   |
+| `GORM SQL 日志`            | 启用（自动） | 禁用（仅记录错误）                     |
 
 ## 环境变量参考
 
 ### 通用环境变量
 
-| 变量名            | 说明     | 示例值                     | 必需 |
-| ----------------- | -------- | -------------------------- | ---- |
-| `APP_NAME`        | 应用名称 | `system`                   | 否   |
-| `APP_ENVIRONMENT` | 运行环境 | `development`/`production` | 否   |
-| `APP_DEBUG`       | 调试模式 | `true`/`false`             | 否   |
+| 变量名         | 说明                                       | 示例值        | 必需 |
+| -------------- | ------------------------------------------ | ------------- | ---- |
+| `SERVER_DEBUG` | 调试模式（控制日志详细度、GORM SQL 日志） | `true`/`false` | 否   |
 
 ### 数据库配置
 
@@ -1117,7 +1115,7 @@ DB_HOST=127.0.0.1      # 宿主机访问
 ```bash
 # 启用 SQL 日志（开发环境自动启用）
 LOG_LEVEL=debug
-APP_DEBUG=true
+SERVER_DEBUG=true
 
 # 查看慢查询
 # 修改 postgresql.conf:
@@ -1183,7 +1181,7 @@ cd docker && ./deploy.sh dev logs identity_srv | grep -i error
 # .env 配置
 LOG_LEVEL=debug              # 最详细的日志
 LOG_FORMAT=text              # 更易读的格式（开发环境）
-APP_DEBUG=true               # 启用调试模式
+SERVER_DEBUG=true            # 启用调试模式（自动设置日志级别和 SQL 日志）
 ```
 
 #### 追踪 RPC 调用链

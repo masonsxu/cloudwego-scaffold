@@ -959,7 +959,7 @@ vim .env.prod  # 修改为生产配置
 - [ ] 启用 `JWT_COOKIE_SECURE_COOKIE=true`（需要 HTTPS）
 - [ ] 设置 `DB_SSLMODE=require` 或 `verify-full`
 - [ ] 配置日志级别为 `info` 或 `warn`
-- [ ] 禁用 `APP_DEBUG=false`
+- [ ] 禁用调试模式 `SERVER_DEBUG=false`
 - [ ] 配置防火墙规则
 - [ ] 设置数据库备份策略
 - [ ] 配置监控和告警
