@@ -2,8 +2,8 @@ package permission
 
 import (
 	"context"
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/permission"
 	permissionconv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/permission"

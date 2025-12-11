@@ -2,8 +2,8 @@
 package wire
 
 import (
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/google/wire"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	corsmdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/cors_middleware"
 	errormw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/error_middleware"
 	jwtmdw "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/middleware/jwt_middleware"

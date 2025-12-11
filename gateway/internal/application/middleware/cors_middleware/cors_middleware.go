@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
 )
 
@@ -17,7 +17,10 @@ type CORSMiddleware struct {
 }
 
 // NewCORSMiddleware 创建新的CORS中间件实例
-func NewCORSMiddleware(config *config.CORSConfig, logger *hertzZerolog.Logger) CORSMiddlewareService {
+func NewCORSMiddleware(
+	config *config.CORSConfig,
+	logger *hertzZerolog.Logger,
+) CORSMiddlewareService {
 	if logger == nil {
 		logger = hertzZerolog.New()
 	}

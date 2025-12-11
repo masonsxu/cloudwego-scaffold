@@ -208,8 +208,12 @@ func (tc *TokenCache) RemoveUserTokens(ctx context.Context, userID string) error
 
 		_, err = pipe.Exec(ctx)
 		if err != nil {
-			tc.logger.Errorf("Failed to batch remove user tokens: error=%v, userID=%s, tokenCount=%d",
-				err, userID, len(tokenHashes))
+			tc.logger.Errorf(
+				"Failed to batch remove user tokens: error=%v, userID=%s, tokenCount=%d",
+				err,
+				userID,
+				len(tokenHashes),
+			)
 
 			return fmt.Errorf("批量删除用户Token失败: %w", err)
 		}

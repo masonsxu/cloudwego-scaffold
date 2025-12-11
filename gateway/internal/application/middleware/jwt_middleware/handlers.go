@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/jwt"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/identity"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/errors"

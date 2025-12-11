@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"time"
 
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/cloudwego/hertz/pkg/app"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/context/auth_context"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/config"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/infrastructure/errors"
@@ -109,8 +109,15 @@ func (ehm *ErrorHandlerMiddlewareImpl) handlePanicError(
 	stackTrace := string(buf[:n])
 
 	// 记录详细的panic日志
-	ehm.logger.Errorf("Panic recovered in error handler: panic=%v, path=%s, method=%s, user_agent=%s, remote_addr=%s, stack_trace=%s",
-		r, string(c.Request.Path()), string(c.Method()), string(c.UserAgent()), c.RemoteAddr(), stackTrace)
+	ehm.logger.Errorf(
+		"Panic recovered in error handler: panic=%v, path=%s, method=%s, user_agent=%s, remote_addr=%s, stack_trace=%s",
+		r,
+		string(c.Request.Path()),
+		string(c.Method()),
+		string(c.UserAgent()),
+		c.RemoteAddr(),
+		stackTrace,
+	)
 
 	// 构建错误响应
 	bizErr := errors.ErrInternal
@@ -141,7 +148,7 @@ func (ehm *ErrorHandlerMiddlewareImpl) handleHTTPStatusError(
 		logMsg += fmt.Sprintf(", org_id=%s", orgID)
 	}
 
-	ehm.logger.Warnf(logMsg)
+	ehm.logger.Warnf("%s", logMsg)
 
 	// 如果启用了详细错误信息，可以在这里添加更多上下文
 	if ehm.config.EnableDetailedErrors {
@@ -158,8 +165,15 @@ func (ehm *ErrorHandlerMiddlewareImpl) logRequestInfo(ctx context.Context, c *ap
 	UserID, hasUserID := auth_context.GetCurrentUserProfileID(c)
 	orgID, hasOrg := auth_context.GetCurrentOrganizationID(c)
 
-	logMsg := fmt.Sprintf("Request started: method=%s, path=%s, query=%s, remote_addr=%s",
-		string(c.Method()), string(c.Request.Path()), string(c.Request.QueryString()), c.RemoteAddr())
+	logMsg := fmt.Sprintf(
+		"Request started: method=%s, path=%s, query=%s, remote_addr=%s",
+		string(
+			c.Method(),
+		),
+		string(c.Request.Path()),
+		string(c.Request.QueryString()),
+		c.RemoteAddr(),
+	)
 
 	if hasUserID && UserID != "" {
 		logMsg += fmt.Sprintf(", user_id=%s", UserID)
@@ -169,7 +183,7 @@ func (ehm *ErrorHandlerMiddlewareImpl) logRequestInfo(ctx context.Context, c *ap
 		logMsg += fmt.Sprintf(", org_id=%s", orgID)
 	}
 
-	ehm.logger.Infof(logMsg)
+	ehm.logger.Infof("%s", logMsg)
 }
 
 // logResponseInfo 记录响应信息
@@ -181,12 +195,20 @@ func (ehm *ErrorHandlerMiddlewareImpl) logResponseInfo(
 	duration := time.Since(startTime)
 	statusCode := c.Response.StatusCode()
 
-	logMsg := fmt.Sprintf("Request completed: method=%s, path=%s, status_code=%d, duration_ms=%d, response_size=%d",
-		string(c.Method()), string(c.Request.Path()), statusCode, duration.Milliseconds(), len(c.Response.Body()))
+	logMsg := fmt.Sprintf(
+		"Request completed: method=%s, path=%s, status_code=%d, duration_ms=%d, response_size=%d",
+		string(
+			c.Method(),
+		),
+		string(c.Request.Path()),
+		statusCode,
+		duration.Milliseconds(),
+		len(c.Response.Body()),
+	)
 
 	if userID, ok := auth_context.GetCurrentUserProfileID(c); ok && userID != "" {
 		logMsg += fmt.Sprintf(", user_id=%s", userID)
 	}
 
-	ehm.logger.Infof(logMsg)
+	ehm.logger.Infof("%s", logMsg)
 }

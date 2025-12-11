@@ -2,8 +2,8 @@
 package wire
 
 import (
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/google/wire"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	identityassembler "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
 	permissionConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/permission"
 	identityservice "github.com/masonsxu/cloudwego-scaffold/gateway/internal/domain/service/identity"

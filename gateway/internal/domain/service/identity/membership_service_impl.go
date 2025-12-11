@@ -4,7 +4,6 @@ import (
 	"context"
 
 	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
-
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/identity"
 	identityConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/internal/domain/common"

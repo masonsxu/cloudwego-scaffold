@@ -56,9 +56,6 @@ func splitAndTrim(value string, sep string) []string {
 
 // mapEnvVarsToConfig 映射环境变量到配置结构
 func mapEnvVarsToConfig(v *viper.Viper) {
-	// 应用配置映射
-	mapAppEnvVars(v)
-
 	// 服务器配置映射
 	mapServerEnvVars(v)
 
@@ -90,21 +87,19 @@ func mapEnvVarsToConfig(v *viper.Viper) {
 	mapRedisEnvVars(v)
 }
 
-// mapAppEnvVars 映射应用相关环境变量
-func mapAppEnvVars(v *viper.Viper) {
-	mapToViper(v, "APP_NAME", "app.name", nil)
-	mapToViper(v, "APP_VERSION", "app.version", nil)
-	mapToViper(v, "APP_ENVIRONMENT", "app.environment", nil)
-	mapToViper(v, "APP_DEBUG", "app.debug", func(value string) interface{} {
-		return value == "true"
-	})
-}
-
 // mapServerEnvVars 映射服务器相关环境变量
 func mapServerEnvVars(v *viper.Viper) {
 	mapToViper(v, "SERVER_NAME", "server.name", nil)
 	mapToViper(v, "SERVER_HOST", "server.host", nil)
-	mapToViper(v, "SERVER_PORT", "server.port", nil)
+	mapToViper(v, "SERVER_PORT", "server.port", func(value string) interface{} {
+		if val, err := strconv.Atoi(value); err == nil {
+			return val
+		}
+
+		return 8888
+	})
+	mapToViper(v, "SERVER_VERSION", "server.version", nil)
+	mapToViper(v, "SERVER_ENVIRONMENT", "server.environment", nil)
 	mapToViper(v, "SERVER_READ_TIMEOUT", "server.read_timeout", func(value string) interface{} {
 		return parseDurationWithDefault(value, 30*time.Second)
 	})
@@ -119,8 +114,6 @@ func mapServerEnvVars(v *viper.Viper) {
 // mapEtcdEnvVars 映射etcd相关环境变量
 func mapEtcdEnvVars(v *viper.Viper) {
 	mapToViper(v, "ETCD_ADDRESS", "etcd.address", nil)
-	// Note: ETCD_USERNAME and ETCD_PASSWORD are not currently used in the implementation
-	// They are mapped here for future use if ETCD authentication is needed
 	mapToViper(v, "ETCD_USERNAME", "etcd.username", nil)
 	mapToViper(v, "ETCD_PASSWORD", "etcd.password", nil)
 	mapToViper(v, "ETCD_TIMEOUT", "etcd.timeout", func(value string) interface{} {
@@ -484,7 +477,13 @@ func mapErrorHandlerEnvVars(v *viper.Viper) {
 		v,
 		"ERROR_HANDLER_MAX_STACK_TRACE_SIZE",
 		"middleware.error_handler.max_stack_trace_size",
-		nil,
+		func(value string) interface{} {
+			if val, err := strconv.Atoi(value); err == nil {
+				return val
+			}
+
+			return 4096 // 默认4KB
+		},
 	)
 	mapToViper(
 		v,
@@ -496,7 +495,13 @@ func mapErrorHandlerEnvVars(v *viper.Viper) {
 		v,
 		"ERROR_HANDLER_ERROR_RESPONSE_TIMEOUT",
 		"middleware.error_handler.error_response_timeout",
-		nil,
+		func(value string) interface{} {
+			if val, err := strconv.Atoi(value); err == nil {
+				return val
+			}
+
+			return 5000 // 默认5000毫秒
+		},
 	)
 }
 
@@ -538,45 +543,21 @@ func mapRedisEnvVars(v *viper.Viper) {
 		return 3
 	})
 	mapToViper(v, "REDIS_DIAL_TIMEOUT", "redis.dial_timeout", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 5 * time.Second
+		return parseDurationWithDefault(value, 5*time.Second)
 	})
 	mapToViper(v, "REDIS_READ_TIMEOUT", "redis.read_timeout", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 3 * time.Second
+		return parseDurationWithDefault(value, 3*time.Second)
 	})
 	mapToViper(v, "REDIS_WRITE_TIMEOUT", "redis.write_timeout", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 3 * time.Second
+		return parseDurationWithDefault(value, 3*time.Second)
 	})
 	mapToViper(v, "REDIS_POOL_TIMEOUT", "redis.pool_timeout", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 4 * time.Second
+		return parseDurationWithDefault(value, 4*time.Second)
 	})
 	mapToViper(v, "REDIS_IDLE_TIMEOUT", "redis.idle_timeout", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 5 * time.Minute
+		return parseDurationWithDefault(value, 5*time.Minute)
 	})
 	mapToViper(v, "REDIS_IDLE_CHECK_FREQ", "redis.idle_check_freq", func(value string) interface{} {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-
-		return 1 * time.Minute
+		return parseDurationWithDefault(value, 1*time.Minute)
 	})
 }

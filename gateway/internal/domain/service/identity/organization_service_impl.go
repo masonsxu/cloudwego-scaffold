@@ -2,8 +2,8 @@ package identity
 
 import (
 	"context"
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/identity"
 	identityConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"

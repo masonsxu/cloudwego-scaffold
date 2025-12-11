@@ -16,6 +16,7 @@ import (
 func CreateLogger(cfg *Configuration) (*hertzZerolog.Logger, error) {
 	// 解析日志级别
 	var level hlog.Level
+
 	switch cfg.Log.Level {
 	case "debug":
 		level = hlog.LevelDebug
@@ -60,8 +61,16 @@ func CreateLogger(cfg *Configuration) (*hertzZerolog.Logger, error) {
 	logger := hertzZerolog.New(opts...)
 
 	// 记录日志初始化信息（使用 hlog 接口）
-	logger.Infof("Logger initialized: level=%s, format=%s, output=%s, file_path=%s, max_size_mb=%d, max_age_days=%d, max_backups=%d",
-		cfg.Log.Level, cfg.Log.Format, cfg.Log.Output, cfg.Log.FilePath, cfg.Log.MaxSize, cfg.Log.MaxAge, cfg.Log.MaxBackups)
+	logger.Infof(
+		"Logger initialized: level=%s, format=%s, output=%s, file_path=%s, max_size_mb=%d, max_age_days=%d, max_backups=%d",
+		cfg.Log.Level,
+		cfg.Log.Format,
+		cfg.Log.Output,
+		cfg.Log.FilePath,
+		cfg.Log.MaxSize,
+		cfg.Log.MaxAge,
+		cfg.Log.MaxBackups,
+	)
 
 	return logger, nil
 }

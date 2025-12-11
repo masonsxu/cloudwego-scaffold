@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// init server
-	addr := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
+	addr := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	h := server.New(server.WithHostPorts(addr), server.WithMaxRequestBodySize(100*1024*1024))
 
 	// 初始化中间件（不包含 Casbin 全局中间件）

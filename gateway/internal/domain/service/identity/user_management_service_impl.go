@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
-
 	"github.com/cloudwego/kitex/pkg/kerrors"
+	hertzZerolog "github.com/hertz-contrib/logger/zerolog"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/http_base"
 	"github.com/masonsxu/cloudwego-scaffold/gateway/biz/model/identity"
 	identityConv "github.com/masonsxu/cloudwego-scaffold/gateway/internal/application/assembler/identity"
