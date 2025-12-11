@@ -15,6 +15,7 @@ import (
 func CreateLogger(cfg *Config) (*zerolog.Logger, error) {
 	// 解析日志级别
 	var level zerolog.Level
+
 	switch cfg.Log.Level {
 	case "debug":
 		level = zerolog.DebugLevel

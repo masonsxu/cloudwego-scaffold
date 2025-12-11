@@ -3,10 +3,9 @@ package config
 import "time"
 
 // Config 总配置结构
-// 包含应用、数据库、服务监听、注册中心、日志、Tracing、Metrics、JWT 等配置段。
-// 加载顺序：默认值 -> 配置文件(config.yaml) -> .env -> 环境变量(同名覆盖)。
+// 包含服务、数据库、日志、Tracing、Metrics 等配置段。
+// 加载顺序：默认值 -> .env -> 环境变量(同名覆盖)。
 type Config struct {
-	App         AppConfig         `mapstructure:"app"`
 	Database    DatabaseConfig    `mapstructure:"database"`
 	Server      ServerConfig      `mapstructure:"server"`
 	HealthCheck HealthCheckConfig `mapstructure:"health_check"`
@@ -14,19 +13,9 @@ type Config struct {
 	Log         LogConfig         `mapstructure:"log"`
 	Tracing     TracingConfig     `mapstructure:"tracing"`
 	Metrics     MetricsConfig     `mapstructure:"metrics"`
-	JWT         JWTConfig         `mapstructure:"jwt"`
 	LogoStorage LogoStorageConfig `mapstructure:"logo_storage"`
 	Casbin      CasbinConfig      `mapstructure:"casbin"`
 	SuperAdmin  SuperAdminConfig  `mapstructure:"super_admin"`
-}
-
-// AppConfig 应用配置
-// 相关环境变量：APP_NAME, APP_VERSION, APP_ENVIRONMENT, APP_DEBUG
-type AppConfig struct {
-	Name        string `mapstructure:"name"`
-	Version     string `mapstructure:"version"`
-	Environment string `mapstructure:"environment"`
-	Debug       bool   `mapstructure:"debug"`
 }
 
 // DatabaseConfig 数据库配置
@@ -51,14 +40,16 @@ type DatabaseConfig struct {
 }
 
 // ServerConfig 服务器配置
-// 相关环境变量：IDENTITY_SRV_NAME, USER_SRV_HOST, USER_SRV_PORT, SERVER_ADDRESS
+// 相关环境变量：SERVER_NAME, SERVER_HOST, SERVER_PORT, SERVER_ADDRESS, SERVER_VERSION, SERVER_ENVIRONMENT
 // Address 可直接提供监听地址（如 ":8891" 或 "0.0.0.0:8891"），
 // 若未设置 Address，则由 Host + Port 组合生成。
 type ServerConfig struct {
-	Name    string `mapstructure:"name"`
-	Host    string `mapstructure:"host"`
-	Port    int    `mapstructure:"port"`
-	Address string `mapstructure:"address"` // 兼容旧配置
+	Name        string `mapstructure:"name"`        // 服务名称（用于服务发现）
+	Host        string `mapstructure:"host"`        // 服务监听主机
+	Port        int    `mapstructure:"port"`        // 服务监听端口
+	Address     string `mapstructure:"address"`     // 兼容旧配置，可直接提供完整地址
+	Version     string `mapstructure:"version"`     // 服务版本号
+	Environment string `mapstructure:"environment"` // 运行环境（development/production）
 }
 
 // HealthCheckConfig 健康检查配置
@@ -106,12 +97,6 @@ type MetricsConfig struct {
 	Enabled bool   `mapstructure:"enabled"`
 	Port    int    `mapstructure:"port"`
 	Path    string `mapstructure:"path"`
-}
-
-// JWTConfig JWT配置
-type JWTConfig struct {
-	Secret      string `mapstructure:"secret"`
-	ExpireHours int    `mapstructure:"expire_hours"`
 }
 
 // LogoStorageConfig 组织Logo存储配置

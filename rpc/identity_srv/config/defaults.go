@@ -8,16 +8,12 @@ import (
 
 // setDefaults 设置默认配置值
 func setDefaults(v *viper.Viper) {
-	// 应用配置默认值
-	v.SetDefault("app.name", "user-srv")
-	v.SetDefault("app.version", "1.0.0")
-	v.SetDefault("app.environment", "development")
-	v.SetDefault("app.debug", false)
-
 	// 服务器配置默认值
 	v.SetDefault("server.name", "identity-service")
-	v.SetDefault("server.host", "localhost")
-	v.SetDefault("server.port", 8888)
+	v.SetDefault("server.host", "0.0.0.0")
+	v.SetDefault("server.port", 8891)
+	v.SetDefault("server.version", "1.0.0")
+	v.SetDefault("server.environment", "development")
 
 	// 健康检查配置默认值
 	v.SetDefault("health_check.port", 10000)

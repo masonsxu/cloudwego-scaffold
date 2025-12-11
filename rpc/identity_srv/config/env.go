@@ -51,9 +51,6 @@ func mapEnvVarsToConfig(v *viper.Viper) {
 	// etcd配置映射
 	mapEtcdEnvVars(v)
 
-	// 应用配置映射
-	mapAppEnvVars(v)
-
 	// 日志配置映射
 	mapLogEnvVars(v)
 
@@ -105,9 +102,17 @@ func mapDatabaseEnvVars(v *viper.Viper) {
 // mapServerEnvVars 映射服务器相关环境变量
 func mapServerEnvVars(v *viper.Viper) {
 	mapToViper(v, "SERVER_ADDRESS", "server.address", nil)
-	mapToViper(v, "IDENTITY_SRV_NAME", "server.name", nil)
-	mapToViper(v, "USER_SRV_HOST", "server.host", nil)
-	mapToViper(v, "USER_SRV_PORT", "server.port", nil)
+	mapToViper(v, "SERVER_NAME", "server.name", nil)
+	mapToViper(v, "SERVER_HOST", "server.host", nil)
+	mapToViper(v, "SERVER_PORT", "server.port", func(value string) interface{} {
+		if val, err := strconv.Atoi(value); err == nil {
+			return val
+		}
+
+		return 8891
+	})
+	mapToViper(v, "SERVER_VERSION", "server.version", nil)
+	mapToViper(v, "SERVER_ENVIRONMENT", "server.environment", nil)
 }
 
 // mapHealthCheckEnvVars 映射健康检查相关环境变量
@@ -128,16 +133,6 @@ func mapEtcdEnvVars(v *viper.Viper) {
 	mapToViper(v, "ETCD_PASSWORD", "etcd.password", nil)
 	mapToViper(v, "ETCD_TIMEOUT", "etcd.timeout", func(value string) interface{} {
 		return parseDurationWithDefault(value, 5*time.Second)
-	})
-}
-
-// mapAppEnvVars 映射应用相关环境变量
-func mapAppEnvVars(v *viper.Viper) {
-	mapToViper(v, "APP_NAME", "app.name", nil)
-	mapToViper(v, "APP_VERSION", "app.version", nil)
-	mapToViper(v, "APP_ENVIRONMENT", "app.environment", nil)
-	mapToViper(v, "APP_DEBUG", "app.debug", func(value string) interface{} {
-		return value == "true"
 	})
 }
 
